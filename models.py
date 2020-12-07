@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import Column, String, create_engine, Integer, Float, Datetime
+from sqlalchemy import Column, String, create_engine, Integer, Float, DateTime
 from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
@@ -31,7 +31,7 @@ class Clothes(db.Model):
     id = Column(Integer, primary_key=True)
     type = Column(String(120), nullable=False)
     size = Column(Float, nullable=False)
-    registered_time = Column(Datetime, nullable=False)
+    registered_time = Column(DateTime, nullable=False)
 
     def __init__(self, type, size):
         self.type = type
