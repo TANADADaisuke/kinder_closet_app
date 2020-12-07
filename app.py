@@ -1,29 +1,33 @@
 import os
 import sys
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, render_template
 from flask_cors import CORS
-from models import setup_db
+from models import setup_db, Closet, User
 from auth import requires_auth, AuthError
 
 def create_app(test_config=None):
 
+    # App Config
     app = Flask(__name__)
     db = setup_db(app)
     CORS(app)
 
+    # ---------------------------------------- #
+    # Endpoints
+    # ---------------------------------------- #
     @app.route('/')
-    def get_greeting():
-        excited = os.environ['EXCITED']
-        greeting = "Hello" 
-        if excited == 'true': greeting = greeting + "!!!!!"
-        return greeting
+    def index():
+        # return render_template('pages/home.html')
+        return 'Welcome to Kinder Reuse Closet!'
 
-    @app.route('/coolkids')
+    # Clothes
+    # ----------------------------------------
+    @app.route('/clothes')
     @requires_auth('get:clothes')
     def be_cool(payload):
         return "Be cool, man, be coooool! You're almost a FSND grad!"
 
-    @app.route('/coolkids', methods=['POST'])
+    @app.route('/clothes', methods=['POST'])
     @requires_auth('post:clothes')
     def create_person(payload):
         # set error status
@@ -55,7 +59,7 @@ def create_app(test_config=None):
                 "catchphrase": catchphrase
             })
     
-    @app.route('/coolkids/<int:person_id>')
+    @app.route('/clothes/<int:clothes_id>')
     def catchup_phrase(person_id):
         person = Person.query.get(person_id)
         # exception for not existing id
@@ -72,8 +76,12 @@ def create_app(test_config=None):
             "catchphrase": phrase
         })
 
+    # Users
+    # ----------------------------------------
+
 
     # Error Handling
+    # ----------------------------------------
     @app.errorhandler(AuthError)
     def auth_error(error):
         status_code = error.status_code
@@ -90,4 +98,4 @@ def create_app(test_config=None):
 app = create_app()
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8080, debug=True)
