@@ -2,7 +2,7 @@ import os
 import sys
 from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
-from models import setup_db, Person
+from models import setup_db
 from auth import requires_auth, AuthError
 
 def create_app(test_config=None):
