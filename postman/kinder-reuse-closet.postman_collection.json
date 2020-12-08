@@ -1,0 +1,60 @@
+{
+	"info": {
+		"_postman_id": "c911b2fa-d78c-43a5-ae78-4207636bfc87",
+		"name": "kinder-reuse-closet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "public",
+			"item": [
+				{
+					"name": "GET /",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3cc758d0-efd3-4454-a9e3-7128591bed91",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjBObF9tN2xCQU1BLUtNU1NndGtUNyJ9.eyJpc3MiOiJodHRwczovL25vcmFkYWkudXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYWRiZTllNjRhYmFjMDA3NTFlN2M2MSIsImF1ZCI6ImNsb3NldCIsImlhdCI6MTYwNzMyNDQ3OCwiZXhwIjoxNjA3MzMxNjc4LCJhenAiOiJNc0pjOTlMM2pTQnluWEFwekVkNWRNWXZrQ3FZV3lncSIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOmNsb3RoZXMiLCJnZXQ6Y2xvdGhlcyIsImdldDp1c2VycyIsInBhdGNoOmNsb3RoZXMiLCJwb3N0OmNsb3RoZXMiXX0.fFbqR_ysrzUtOIfl3etUQzMi3OX6tna16rLfV3rxuG74jBxH8hi1ZmEJH9meaOvyIvaOQReoJhd7nvqCveOXih5cEZaFSzl3tZvorDfE2U6QRKu__g3nU8MJ_CGQpXaoK1oKZNgf4th24jgiUm76W9JcU8xk7q3k8-fdEAFUUjt5RbcF54bg4kZGiknTS2AJ-thj-t7yjzdWZOe3EUQJKGe7U7n7KcRqKjyF9Mp6YPxp9iY1Q5iSvrMV_vjeVHmJ-Mbfge8HqKqiTWdkwkBW4sD0PbRKKqTOR8chIGMCXdMGZ7qf5b0_RYGQCTiaQaEr6QkDV-L33FSdoTiHWDj_zg",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "https://kinder-reuse-closet.herokuapp.com/",
+							"protocol": "https",
+							"host": [
+								"kinder-reuse-closet",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
