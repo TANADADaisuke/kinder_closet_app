@@ -23,9 +23,28 @@ def create_app(test_config=None):
     # Clothes
     # ----------------------------------------
     @app.route('/clothes')
-    @requires_auth('get:clothes')
-    def be_cool(payload):
-        return "Be cool, man, be coooool! You're almost a FSND grad!"
+    # @requires_auth('get:clothes')
+    def retrieve_clothes():
+        """Get clothes from our database server.
+
+        Returns: json object with following attributes
+        {
+            'success': Ture,
+            'total': num of clothes stored in our server,
+            'clothes': array of each formatted clothes
+        }
+        """
+        selection = Clothes.query.all()
+        clothes = []
+        for item in selection:
+            formatted_clothes = item.format()
+            clothes.append(formatted_clothes)
+
+        return jsonify({
+            'success': True,
+            'total': len(clothes),
+            'clothes': clothes
+        })
 
     @app.route('/clothes', methods=['POST'])
     @requires_auth('post:clothes')
