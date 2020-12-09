@@ -1,4 +1,5 @@
 env/
+postman/
 .vscode/
 __pycache__/
 setup.sh
