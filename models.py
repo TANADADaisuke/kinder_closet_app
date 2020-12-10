@@ -74,6 +74,23 @@ class User(db.Model):
     def __init__(self, e_mail, address=""):
         self.e_mail = e_mail
         self.address = address
+    
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+    
+    def rollback(self):
+        db.session.rollback()
+    
+    def close_session(self):
+        db.session.close()
 
     def format(self):
         return {
