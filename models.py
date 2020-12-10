@@ -36,7 +36,11 @@ class Clothes(db.Model):
     def __init__(self, type, size):
         self.type = type
         self.size = size
+
+    def insert(self):
         self.registered_time = datetime.utcnow()
+        db.session.add()
+        db.session.commit()
 
     def format(self):
         return {
