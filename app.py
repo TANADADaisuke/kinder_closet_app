@@ -59,7 +59,7 @@ def create_app(test_config=None):
         """
         # set error status
         error = False
-        # get posted data from json
+        # get posted data from json request
         body = request.get_json()
         # if request does not have json body, abort 400
         if body is None:
@@ -93,21 +93,47 @@ def create_app(test_config=None):
                 'clothes': clothes.format()
             })
     
-    @app.route('/clothes/<int:clothes_id>')
-    def catchup_phrase(person_id):
-        person = Person.query.get(person_id)
+    @app.route('/clothes/<int:clothes_id>', methods=['PATCH'])
+    # @requires_auth("patch:clothes")
+    def catchup_phrase(clothes_id):
+        """Update clothes data of given id.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': formatted clothes which has been just updated
+        }
+        """
+        clothes = Clothes.query.get(clothes_id)
         # exception for not existing id
-        if person is None:
+        if clothes is None:
             abort(404)
-        # get attributes
-        name = person.name
-        phrase = person.catchphrase
+        # set error status
+        error = False
+        # get posted data from json request
+        body = request.get_json()
+        # update clothes data
+        keys = body.keys()
+        try:
+            if 'type' in keys:
+                clothes.type = body['type']
+            if 'size'in keys:
+                clothes.size = body['size']
+            clothes.update()
+            formatted_clothes = clothes.format()
+        except Exception:
+            clothes.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            clothes.close_session()
+        
+        if error:
+            abort(400)
 
         return jsonify({
-            "success": True,
-            "id": person_id,
-            "name": name,
-            "catchphrase": phrase
+            'success': True,
+            'clothes': formatted_clothes
         })
 
     # Users
