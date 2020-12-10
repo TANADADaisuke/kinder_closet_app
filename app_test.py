@@ -1,3 +1,4 @@
+import json
 import unittest
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -5,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import setup_db
 
-DATABASE_URL = os.environ['TEST_DATABASE_URL']
+DATABASE_URL = os.environ['DATABASE_URL']
 
 class ClosetAppTestCase(unittest.TestCase):
     """This class represents the closet app test case"""
@@ -30,11 +31,20 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for public access
     # ------------------------------------------------
-    def test_retrieve_clothes(self):
+    def test_home_access(self):
         """Test retrieving all clothes"""
         res = self.client().get('/')
 
         self.assertEqual(res.status_code, 200)
+
+    def test_retrieve_clothes(self):
+        """Test retrieving all clothes"""
+        res = self.client().get('/clothes')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['clothes'], list), True)
 
 
 # Make the tests conveniently excecutabe
