@@ -9,7 +9,6 @@ def create_app(test_config=None):
 
     # App Config
     app = Flask(__name__)
-    # db = setup_db(app)
     setup_db(app)
     CORS(app)
 
