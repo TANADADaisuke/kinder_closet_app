@@ -136,6 +136,42 @@ def create_app(test_config=None):
             'clothes': formatted_clothes
         })
 
+
+    @app.route('/clothes/<int:clothes_id>', methods=['DELETE'])
+    # @requires_auth('delete:clothes')
+    def delete_clothes(clothes_id):
+        """Delete the given clothes.
+
+        Returns: json object with following attribute
+        {
+            'success': True,
+            'deleted': id of deleted clothes
+        }
+        """
+        clothes = Clothes.query.get(clothes_id)
+        # exception for not existing id
+        if clothes is None:
+            abort(404)
+        # set error status
+        error = False
+        # delete the given clothes
+        try:
+            clothes.delete()
+        except Exception:
+            clothes.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            clothes.close_session()
+        
+        if error:
+            abort(400)
+        
+        return jsonify({
+            'success': True,
+            'deleted': clothes_id
+        })
+
     # Users
     # ----------------------------------------
 
