@@ -9,16 +9,13 @@ database_path = os.environ['DATABASE_URL']
 db = SQLAlchemy()
 
 def setup_db(app, database_path=database_path):
-    """binds a flask application and a SQLAlchemy service
-
-    Returns: db
-    """
+    """binds a flask application and a SQLAlchemy service"""
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
 
-    return db
+    # return db
 
 
 # --------------------------------------------- #
@@ -39,15 +36,21 @@ class Clothes(db.Model):
 
     def insert(self):
         self.registered_time = datetime.utcnow()
-        db.session.add()
+        db.session.add(self)
         db.session.commit()
+
+    def rollback(self):
+        db.session.rollback()
+    
+    def close_session(self):
+        db.session.close()
 
     def format(self):
         return {
             'id': self.id,
             'type': self.type,
             'size': self.size,
-            'registerd': registered_time
+            'registerd': self.registered_time
         }
 
 

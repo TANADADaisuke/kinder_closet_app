@@ -9,7 +9,8 @@ def create_app(test_config=None):
 
     # App Config
     app = Flask(__name__)
-    db = setup_db(app)
+    # db = setup_db(app)
+    setup_db(app)
     CORS(app)
 
     # ---------------------------------------- #
@@ -47,35 +48,50 @@ def create_app(test_config=None):
         })
 
     @app.route('/clothes', methods=['POST'])
-    @requires_auth('post:clothes')
-    def create_person(payload):
+    # @requires_auth('post:clothes')
+    def create_person():
+        """Post a new clothes to our database server.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': formatted clothes which has been just created
+        }
+        """
         # set error status
         error = False
         # get posted data from json
-        name = request.get_json()['name']
-        catchphrase = request.get_json()['catchphrase']
-        # create new person
+        body = request.get_json()
+        # if request does not have json body, abort 400
+        if body is None:
+            abort(400)
+        # if json does not have key 'type' and 'size', abort 400
+        keys = body.keys()
+        if 'type' not in keys or 'size' not in keys:
+            abort(400)
+        # create new clothes
+        clothes_type = body['type']
+        size = body['size']
         try:
-            person = Person(
-                name=name,
-                catchphrase=catchphrase
+            clothes = Clothes(
+                type=clothes_type,
+                size=size
             )
-            db.session.add(person)
-            db.session.commit()
+            clothes.insert()
+            formatted_clothes = clothes.format()
         except Exception:
-            db.session.rollback()
+            clothes.rollback()
             error = True
             print(sys.exc_info())
         finally:
-            db.session.close()
+            clothes.close_session()
         
         if error:
             abort(400)
         else:
             return jsonify({
-                "success": True,
-                "name": name,
-                "catchphrase": catchphrase
+                'success': True,
+                'clothes': clothes.format()
             })
     
     @app.route('/clothes/<int:clothes_id>')
