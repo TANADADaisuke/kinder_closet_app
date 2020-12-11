@@ -63,6 +63,20 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['type'], clothes_type)
         self.assertEqual(data['clothes']['size'], float(size))
 
+    def test_update_clothes(self):
+        """Test updating given clothes"""
+        size = '120'
+        res = self.client().patch(
+            '/clothes/3',
+            json={
+                'size': size
+            })
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['size'], float(size))
+
 # Make the tests conveniently excecutabe
 if __name__ == "__main__":
     unittest.main()
