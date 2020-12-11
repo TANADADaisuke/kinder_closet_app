@@ -77,6 +77,17 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['clothes']['size'], float(size))
 
+    def test_delete_clothes(self):
+        """Test deleting given clothes"""
+        clothes_id = 13
+        res = self.client().delete('/clothes/{}'.format(clothes_id))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], int(clothes_id))
+
+
 # Make the tests conveniently excecutabe
 if __name__ == "__main__":
     unittest.main()
