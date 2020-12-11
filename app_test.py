@@ -4,9 +4,9 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 
 from app import create_app
-from models import setup_db
+from models import setup_db, db
 
-DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = os.environ['TEST_DATABASE_URL']
 
 class ClosetAppTestCase(unittest.TestCase):
     """This class represents the closet app test case"""
@@ -20,10 +20,10 @@ class ClosetAppTestCase(unittest.TestCase):
 
         # bind the app to the current context
         with self.app.app_context():
-            self.db = SQLAlchemy()
+            self.db = db
             self.db.init_app(self.app)
             # create all tables
-            # self.db.create_all()
+            self.db.create_all()
     
     def tearDown(self):
         """Excecuted after reach test"""
@@ -31,22 +31,13 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for public access
     # ------------------------------------------------
-    def test_home_access(self):
-        """Test retrieving all clothes"""
+    def test_1_access_to_home(self):
+        """Access test"""
         res = self.client().get('/')
 
         self.assertEqual(res.status_code, 200)
 
-    def test_retrieve_clothes(self):
-        """Test retrieving all clothes"""
-        res = self.client().get('/clothes')
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(isinstance(data['clothes'], list), True)
-    
-    def test_create_clothes(self):
+    def test_2_create_clothes(self):
         """Test creating new clothes"""
         clothes_type = 'shirt'
         size = '100'
@@ -63,11 +54,20 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['type'], clothes_type)
         self.assertEqual(data['clothes']['size'], float(size))
 
-    def test_update_clothes(self):
+    def test_3_retrieve_clothes(self):
+        """Test retrieving all clothes"""
+        res = self.client().get('/clothes')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['clothes'], list), True)
+    
+    def test_4_update_clothes(self):
         """Test updating given clothes"""
         size = '120'
         res = self.client().patch(
-            '/clothes/3',
+            '/clothes/1',
             json={
                 'size': size
             })
@@ -77,9 +77,9 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['clothes']['size'], float(size))
 
-    def test_delete_clothes(self):
+    def test_5_delete_clothes(self):
         """Test deleting given clothes"""
-        clothes_id = 13
+        clothes_id = 1
         res = self.client().delete('/clothes/{}'.format(clothes_id))
         data = json.loads(res.data)
 
