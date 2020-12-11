@@ -23,7 +23,7 @@ class ClosetAppTestCase(unittest.TestCase):
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
             # create all tables
-            self.db.create_all()
+            # self.db.create_all()
     
     def tearDown(self):
         """Excecuted after reach test"""
@@ -45,7 +45,23 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['clothes'], list), True)
+    
+    def test_create_clothes(self):
+        """Test creating new clothes"""
+        clothes_type = 'shirt'
+        size = '100'
+        res = self.client().post(
+            '/clothes',
+            json={
+                'type': clothes_type,
+                'size': size
+            })
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['type'], clothes_type)
+        self.assertEqual(data['clothes']['size'], float(size))
 
 # Make the tests conveniently excecutabe
 if __name__ == "__main__":
