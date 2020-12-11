@@ -3,6 +3,7 @@ postman/
 .vscode/
 __pycache__/
 setup.sh
+jwt.sh
 
 # OS generated files #
 ######################
