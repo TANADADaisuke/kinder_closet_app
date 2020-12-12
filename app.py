@@ -209,14 +209,14 @@ def create_app(test_config=None):
             'user': formatted user which has been just created
         }
         """
-       # set error status
-       error = False
-       # get posted data from json request
-       body = request.get_json()
-       keys = body.keys()
-       # if request does not have json body, abort 400
-       if body is None:
-           abort(400)
+        # set error status
+        error = False
+        # get posted data from json request
+        body = request.get_json()
+        keys = body.keys()
+        # if request does not have json body, abort 400
+        if body is None:
+            abort(400)
         # if json does not have key 'e_mail', abort 400
         if 'e_mail' not in keys:
             abort(400)
