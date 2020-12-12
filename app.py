@@ -339,7 +339,7 @@ def create_app(test_config=None):
         }), status_code
     
     @app.errorhandler(400)
-    def bad_request(400):
+    def bad_request(error):
         return jsonify({
             'success': False,
             'error': 400,
