@@ -68,7 +68,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    e_mail = Column(String(120), nullable=False)
+    e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
 
     def __init__(self, e_mail, address=""):
