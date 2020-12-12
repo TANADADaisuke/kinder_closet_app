@@ -242,6 +242,73 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], int(self.clothes_id))
 
+    # Test for manager access
+    # ------------------------------------------------
+    def test_manager_1_create_clothes(self):
+        """POST /clothes
+        Test creating new clothes with manager JWT.
+        """
+        clothes_type = 'shirt'
+        size = '100'
+        res = self.client().post(
+            '/clothes',
+            json={
+                'type': clothes_type,
+                'size': size
+            },
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['type'], clothes_type)
+        self.assertEqual(data['clothes']['size'], float(size))
+
+        # set clothes id for sequencing tests
+        os.environ['TEST_CLOTHES_ID'] = str(data['clothes']['id'])
+
+    def test_manager_2_retrieve_clothes(self):
+        """GET /clothes
+        Test retrieving all clothes with manager JWT.
+        """
+        res = self.client().get(
+            '/clothes',
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['clothes'], list), True)
+    
+    def test_manager_3_update_clothes(self):
+        """PATCH /clothes/<id>
+        Test updating given clothes with manager JWT.
+        """
+        size = '120'
+        res = self.client().patch(
+            '/clothes/{}'.format(self.clothes_id),
+            json={
+                'size': size
+            },
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['size'], float(size))
+
+    def test_manager_4_delete_clothes(self):
+        """DELETE /clothes/<id>
+        Test deleting given clothes with manager JWT.
+        """
+        res = self.client().delete(
+            '/clothes/{}'.format(self.clothes_id),
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], int(self.clothes_id))
 
 
 # Make the tests conveniently excecutabe
