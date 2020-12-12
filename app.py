@@ -23,8 +23,8 @@ def create_app(test_config=None):
     # Clothes
     # ----------------------------------------
     @app.route('/clothes')
-    # @requires_auth('get:clothes')
-    def retrieve_clothes():
+    @requires_auth('get:clothes')
+    def retrieve_clothes(payload):
         """Get clothes from our database server.
 
         Returns: json object with following attributes
@@ -47,8 +47,8 @@ def create_app(test_config=None):
         })
 
     @app.route('/clothes', methods=['POST'])
-    # @requires_auth('post:clothes')
-    def create_person():
+    @requires_auth('post:clothes')
+    def create_person(payload):
         """Post a new clothes to our database server.
 
         Returns: json object with following attributes
@@ -94,8 +94,8 @@ def create_app(test_config=None):
             })
     
     @app.route('/clothes/<int:clothes_id>', methods=['PATCH'])
-    # @requires_auth("patch:clothes")
-    def catchup_phrase(clothes_id):
+    @requires_auth('patch:clothes')
+    def catchup_phrase(payload, clothes_id):
         """Update clothes data of given id.
 
         Returns: json object with following attributes
@@ -138,8 +138,8 @@ def create_app(test_config=None):
 
 
     @app.route('/clothes/<int:clothes_id>', methods=['DELETE'])
-    # @requires_auth('delete:clothes')
-    def delete_clothes(clothes_id):
+    @requires_auth('delete:clothes')
+    def delete_clothes(payload, clothes_id):
         """Delete the given clothes.
 
         Returns: json object with following attribute
