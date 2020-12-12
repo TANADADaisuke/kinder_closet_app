@@ -222,7 +222,7 @@ def create_app(test_config=None):
             abort(400)
         # create a new user
         e_mail = body['e_mail']
-        if 'addess' in keys:
+        if 'address' in keys:
             address = body['address']
         else:
             address = ''
@@ -275,7 +275,7 @@ def create_app(test_config=None):
             if 'address' in keys:
                 user.address = body['address']
             user.update()
-            formatted_user = user.formate()
+            formatted_user = user.format()
         except Exception:
             user.rollback()
             error = True
