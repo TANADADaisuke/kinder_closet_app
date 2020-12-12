@@ -24,6 +24,20 @@ class ClosetAppTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
+        
+        # set up jwts
+        self.user_headers = {
+            'Authorization': 'Bearer {}'.format(os.environ['USER_JWT'])
+        }
+        self.staff_headers = {
+            'Authorization': 'Bearer {}'.format(os.environ['STAFF_JWT'])
+        }
+        self.manager_headers = {
+            'Authorization': 'Bearer {}'.format(os.environ['MANAGER_JWT'])
+        }
+
+        # set test clothes id for patch and delete method test
+        self.clothes_id = os.environ['TEST_CLOTHES_ID']
     
     def tearDown(self):
         """Excecuted after reach test"""
@@ -31,14 +45,18 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for public access
     # ------------------------------------------------
-    def test_1_access_to_home(self):
-        """Access test"""
+    def test_public_1_access_to_home(self):
+        """GET /
+        Access will succeed without any token.
+        """
         res = self.client().get('/')
 
         self.assertEqual(res.status_code, 200)
 
-    def test_2_create_clothes(self):
-        """Test creating new clothes"""
+    def test_public_2_forbidden_create_clothes(self):
+        """POST /clothes
+        Public access is forbidden for creating new clothes.
+        """
         clothes_type = 'shirt'
         size = '100'
         res = self.client().post(
@@ -49,22 +67,25 @@ class ClosetAppTestCase(unittest.TestCase):
             })
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(data['clothes']['type'], clothes_type)
-        self.assertEqual(data['clothes']['size'], float(size))
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
 
-    def test_3_retrieve_clothes(self):
-        """Test retrieving all clothes"""
+    def test_public_3_forbidden_retrieve_clothes(self):
+        """GET /clothes
+        Public access is forbidden for retrieving all clothes.
+        """
         res = self.client().get('/clothes')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(isinstance(data['clothes'], list), True)
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
     
-    def test_4_update_clothes(self):
-        """Test updating given clothes"""
+    def test_public_4_forbidden_update_clothes(self):
+        """PATCH /clothes/<id>
+        Public access is forbidden for updating given clothes.
+        """
         size = '120'
         res = self.client().patch(
             '/clothes/1',
@@ -73,19 +94,93 @@ class ClosetAppTestCase(unittest.TestCase):
             })
         data = json.loads(res.data)
         
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(data['clothes']['size'], float(size))
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
 
-    def test_5_delete_clothes(self):
-        """Test deleting given clothes"""
-        clothes_id = 1
-        res = self.client().delete('/clothes/{}'.format(clothes_id))
+    def test_public_5_forbidden_delete_clothes(self):
+        """DELETE /clothes/<id>
+        Public access is forbidden for deleting given clothes.
+        """
+        res = self.client().delete('/clothes/1')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    # Test for staff access
+    # ------------------------------------------------
+
+
+    # Test for staff access
+    # ------------------------------------------------
+    def test_staff_1_create_clothes(self):
+        """POST /clothes
+        Test creating new clothes with staff JWT.
+        """
+        clothes_type = 'shirt'
+        size = '100'
+        res = self.client().post(
+            '/clothes',
+            json={
+                'type': clothes_type,
+                'size': size
+            },
+            headers=self.staff_headers)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], int(clothes_id))
+        self.assertEqual(data['clothes']['type'], clothes_type)
+        self.assertEqual(data['clothes']['size'], float(size))
+
+        # set clothes id for sequencing tests
+        os.environ['TEST_CLOTHES_ID'] = str(data['clothes']['id'])
+
+    def test_staff_2_retrieve_clothes(self):
+        """GET /clothes
+        Test retrieving all clothes with staff JWT.
+        """
+        res = self.client().get(
+            '/clothes',
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['clothes'], list), True)
+    
+    def test_staff_3_update_clothes(self):
+        """PATCH /clothes/<id>
+        Test updating given clothes with staff JWT.
+        """
+        size = '120'
+        res = self.client().patch(
+            '/clothes/{}'.format(self.clothes_id),
+            json={
+                'size': size
+            },
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['size'], float(size))
+
+    def test_staff_4_delete_clothes(self):
+        """DELETE /clothes/<id>
+        Test deleting given clothes with staff JWT.
+        """
+        res = self.client().delete(
+            '/clothes/{}'.format(self.clothes_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], int(self.clothes_id))
+
 
 
 # Make the tests conveniently excecutabe
