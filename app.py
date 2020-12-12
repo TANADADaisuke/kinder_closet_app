@@ -29,7 +29,7 @@ def create_app(test_config=None):
 
         Returns: json object with following attributes
         {
-            'success': Ture,
+            'success': True,
             'total': num of clothes stored in our server,
             'clothes': array of each formatted clothes
         }
@@ -95,7 +95,7 @@ def create_app(test_config=None):
     
     @app.route('/clothes/<int:clothes_id>', methods=['PATCH'])
     @requires_auth('patch:clothes')
-    def catchup_phrase(payload, clothes_id):
+    def update_clothes_data(payload, clothes_id):
         """Update clothes data of given id.
 
         Returns: json object with following attributes
@@ -174,7 +174,157 @@ def create_app(test_config=None):
 
     # Users
     # ----------------------------------------
+    @app.route('/users')
+    @requires_auth('get:users')
+    def retrieve_users(payload):
+        """Get users from our database server.
+        
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'total': num of users stored in our server.
+            'users': array of each formatted users
+        }
+        """
+        selection = User.query.all()
+        users = []
+        for item in selection:
+            formatted_user = item.format()
+            users.append(formatted_user)
+        
+        return jsonify({
+            'success': True,
+            'total': len(users),
+            'users': users
+        })
 
+    @app.route('/users', methods=['POST'])
+    @requires_auth('post:users')
+    def create_user(payload):
+        """Create a new user.
+        
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'user': formatted user which has been just created
+        }
+        """
+       # set error status
+       error = False
+       # get posted data from json request
+       body = request.get_json()
+       keys = body.keys()
+       # if request does not have json body, abort 400
+       if body is None:
+           abort(400)
+        # if json does not have key 'e_mail', abort 400
+        if 'e_mail' not in keys:
+            abort(400)
+        # create a new user
+        e_mail = body['e_mail']
+        if 'addess' in keys:
+            address = body['address']
+        else:
+            address = ''
+        try:
+            user = User(
+                e_mail=e_mail,
+                address=address
+            )
+            user.insert()
+            formatted_user = user.format()
+        except Exception:
+            user.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            user.close_session()
+        
+        if error:
+            abort(400)
+        else:
+            return jsonify({
+                'success': True,
+                'user': formatted_user
+            })
+
+    @app.route('/users/<int:user_id>', methods=['PATCH'])
+    @requires_auth('patch:users')
+    def update_user_data(payload, user_id):
+        """Update user date of given id.
+
+        Returns: json object with following attributes
+        {
+            'success': Ture,
+            'user': formatted user which has been just updated
+        }
+        """
+        user = User.query.get(user_id)
+        # exception for non existing id
+        if user is None:
+            abort(404)
+        # set error status
+        error = False
+        # get posted data from json request
+        body = request.get_json()
+        # update user data
+        keys = body.keys()
+        try:
+            if 'e_mail' in keys:
+                user.e_mail = body['e_mail']
+            if 'address' in keys:
+                user.address = body['address']
+            user.update()
+            formatted_user = user.formate()
+        except Exception:
+            user.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            user.close_session()
+        
+        if error:
+            abort(400)
+
+        return jsonify({
+            'success': True,
+            'user': formatted_user
+        })
+
+    @app.route('/users/<int:user_id>', methods=['DELETE'])
+    @requires_auth('delete:users')
+    def delete_user(payload, user_id):
+        """Delete the given user.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'deleted': id of deleted user
+        }
+        """
+        user = User.query.get(user_id)
+        # exception for non existing id
+        if user is None:
+            abort(404)
+        # set error status
+        error = False
+        # delete the user
+        try:
+            user.delete()
+        except Exception:
+            user.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            user.close_session()
+        
+        if error:
+            abort(400)
+        
+        return jsonify({
+            'success': True,
+            'deleted': user_id
+        })
 
     # Error Handling
     # ----------------------------------------
