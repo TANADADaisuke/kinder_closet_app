@@ -109,8 +109,69 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
 
-    # Test for staff access
+    # Test for user access
     # ------------------------------------------------
+    def test_user_1_forbidden_create_clothes(self):
+        """POST /clothes
+        Creating new clothes with user JWT is forbidden.
+        """
+        clothes_type = 'shirt'
+        size = '100'
+        res = self.client().post(
+            '/clothes',
+            json={
+                'type': clothes_type,
+                'size': size
+            },
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_user_2_retrieve_clothes(self):
+        """GET /clothes
+        Test retrieving all clothes with user JWT.
+        """
+        res = self.client().get(
+            '/clothes',
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['clothes'], list), True)
+    
+    def test_user_3_forbidden_update_clothes(self):
+        """PATCH /clothes/<id>
+        Updating given clothes with user JWT is forbidden.
+        """
+        size = '120'
+        res = self.client().patch(
+            '/clothes/{}'.format(self.clothes_id),
+            json={
+                'size': size
+            },
+            headers=self.user_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_user_4_forbidden_delete_clothes(self):
+        """DELETE /clothes/<id>
+        Deleting given clothes with user JWT is forbidden.
+        """
+        res = self.client().delete(
+            '/clothes/{}'.format(self.clothes_id),
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
 
 
     # Test for staff access
