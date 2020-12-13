@@ -36,8 +36,9 @@ class ClosetAppTestCase(unittest.TestCase):
             'Authorization': 'Bearer {}'.format(os.environ['MANAGER_JWT'])
         }
 
-        # set test clothes id for patch and delete method test
+        # set test ids for patch and delete method test
         self.clothes_id = os.environ['TEST_CLOTHES_ID']
+        self.user_id = os.environ['TEST_USER_ID']
     
     def tearDown(self):
         """Excecuted after reach test"""
@@ -244,6 +245,9 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for manager access
     # ------------------------------------------------
+    # ------------------------------
+    # access to clothes endpoints
+    # ------------------------------
     def test_manager_1_create_clothes(self):
         """POST /clothes
         Test creating new clothes with manager JWT.
@@ -309,6 +313,75 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], int(self.clothes_id))
+
+    # ------------------------------
+    # access to users endpoints
+    # ------------------------------
+    def test_manager_1_create_users(self):
+        """POST /users
+        Test creating new users with manager JWT.
+        """
+        e_mail = 'test1@kinder-reuse-closet.com'
+        address = 'Minato-ku, Tokyo'
+        res = self.client().post(
+            '/users',
+            json={
+                'e_mail': e_mail,
+                'address': address
+            },
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['user']['e_mail'], e_mail)
+        self.assertEqual(data['user']['address'], address)
+
+        # set users id for sequencing tests
+        os.environ['TEST_USER_ID'] = str(data['user']['id'])
+
+    def test_manager_2_retrieve_users(self):
+        """GET /users
+        Test retrieving all users with manager JWT.
+        """
+        res = self.client().get(
+            '/users',
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['users'], list), True)
+    
+    def test_manager_3_update_users(self):
+        """PATCH /users/<id>
+        Test updating given user with manager JWT.
+        """
+        address = 'Takanawa, Minato-ku, Tokyo'
+        res = self.client().patch(
+            '/users/{}'.format(self.user_id),
+            json={
+                'address': address
+            },
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['user']['address'], address)
+
+    def test_manager_4_delete_users(self):
+        """DELETE /users/<id>
+        Test deleting given user with manager JWT.
+        """
+        res = self.client().delete(
+            '/users/{}'.format(self.user_id),
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], int(self.user_id))
 
 
 # Make the tests conveniently excecutabe
