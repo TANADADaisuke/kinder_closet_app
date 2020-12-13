@@ -177,6 +177,9 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for staff access
     # ------------------------------------------------
+    # ------------------------------
+    # access to clothes endpoints
+    # ------------------------------
     def test_staff_1_create_clothes(self):
         """POST /clothes
         Test creating new clothes with staff JWT.
@@ -242,6 +245,71 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], int(self.clothes_id))
+
+    # ------------------------------
+    # access to users endpoints
+    # ------------------------------
+    def test_staff_1_forbidden_create_users(self):
+        """POST /users
+        Creating new users with staff JWT is forbidden.
+        """
+        e_mail = 'test1@kinder-reuse-closet.com'
+        address = 'Minato-ku, Tokyo'
+        res = self.client().post(
+            '/users',
+            json={
+                'e_mail': e_mail,
+                'address': address
+            },
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_staff_2_retrieve_users(self):
+        """GET /users
+        Test retrieving all users with staff JWT.
+        """
+        res = self.client().get(
+            '/users',
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(isinstance(data['users'], list), True)
+    
+    def test_staff_3_forbidden_update_users(self):
+        """PATCH /users/<id>
+        Updating given user with staff JWT is forbidden.
+        """
+        address = 'Takanawa, Minato-ku, Tokyo'
+        res = self.client().patch(
+            '/users/{}'.format(self.user_id),
+            json={
+                'address': address
+            },
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_staff_4_forbidden_delete_users(self):
+        """DELETE /users/<id>
+        Deleting given user with staff JWT is forbidden.
+        """
+        res = self.client().delete(
+            '/users/{}'.format(self.user_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
 
     # Test for manager access
     # ------------------------------------------------
