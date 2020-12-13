@@ -46,6 +46,9 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for public access
     # ------------------------------------------------
+    # ------------------------------
+    # access to clothes endpoints
+    # ------------------------------
     def test_public_1_access_to_home(self):
         """GET /
         Access will succeed without any token.
@@ -104,6 +107,65 @@ class ClosetAppTestCase(unittest.TestCase):
         Public access is forbidden for deleting given clothes.
         """
         res = self.client().delete('/clothes/1')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    # ------------------------------
+    # access to users endpoints
+    # ------------------------------
+    def test_public_1_forbidden_create_users(self):
+        """POST /users
+        Public access is forbidden for creating new users.
+        """
+        e_mail = 'test1@kinder-reuse-closet.com'
+        address = 'Minato-ku, Tokyo'
+        res = self.client().post(
+            '/users',
+            json={
+                'e_mail': e_mail,
+                'address': address
+            })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    def test_public_2_forbidden_retrieve_users(self):
+        """GET /users
+        Pubric access is forbidden for retrieving all users.
+        """
+        res = self.client().get('/users')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+    
+    def test_public_3_forbidden_update_users(self):
+        """PATCH /users/<id>
+        Public access is forbidden for updating given user.
+        """
+        address = 'Takanawa, Minato-ku, Tokyo'
+        res = self.client().patch(
+            '/users/{}'.format(self.user_id),
+            json={
+                'address': address
+            })
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    def test_public_4_forbidden_delete_users(self):
+        """DELETE /users/<id>
+        Public access is forbidden for deleting given user.
+        """
+        res = self.client().delete('/users/{}'.format(self.user_id))
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 401)
