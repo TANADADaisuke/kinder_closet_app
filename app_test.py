@@ -112,6 +112,9 @@ class ClosetAppTestCase(unittest.TestCase):
 
     # Test for user access
     # ------------------------------------------------
+    # ------------------------------
+    # access to clothes endpoints
+    # ------------------------------
     def test_user_1_forbidden_create_clothes(self):
         """POST /clothes
         Creating new clothes with user JWT is forbidden.
@@ -174,6 +177,70 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
 
+    # ------------------------------
+    # access to users endpoints
+    # ------------------------------
+    def test_user_1_forbidden_create_users(self):
+        """POST /users
+        Creating new users with user JWT is forbidden.
+        """
+        e_mail = 'test1@kinder-reuse-closet.com'
+        address = 'Minato-ku, Tokyo'
+        res = self.client().post(
+            '/users',
+            json={
+                'e_mail': e_mail,
+                'address': address
+            },
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_user_2_forbidden_retrieve_users(self):
+        """GET /users
+        Retrieving all users with user JWT is forbidden.
+        """
+        res = self.client().get(
+            '/users',
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+    
+    def test_user_3_forbidden_update_users(self):
+        """PATCH /users/<id>
+        Updating given user with user JWT is forbidden.
+        """
+        address = 'Takanawa, Minato-ku, Tokyo'
+        res = self.client().patch(
+            '/users/{}'.format(self.user_id),
+            json={
+                'address': address
+            },
+            headers=self.user_headers)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_user_4_forbidden_delete_users(self):
+        """DELETE /users/<id>
+        Deleting given user with user JWT is forbidden.
+        """
+        res = self.client().delete(
+            '/users/{}'.format(self.user_id),
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
 
     # Test for staff access
     # ------------------------------------------------
