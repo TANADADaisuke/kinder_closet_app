@@ -71,7 +71,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    auth0_id = Column(String(120), nullable=False)
+    auth0_id = Column(String(120), nullable=True)
     e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
     reserves = db.relationship('Reserve', backref='user', lazy=True)
