@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import Column, String, Integer, create_engine
-from sqlalchemy import Float, DateTime, relationship, ForeignKey
+from sqlalchemy import Float, DateTime, ForeignKey
 from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
@@ -29,7 +29,7 @@ class Clothes(db.Model):
     size = Column(Float, nullable=False)
     registered_time = Column(DateTime, nullable=False)
     status = Column(String(20))
-    reserves = relationship('Reserve', backref='clothes', lazy=True)
+    reserves = db.relationship('Reserve', backref='clothes', lazy=True)
 
     def __init__(self, type, size):
         self.type = type
@@ -73,7 +73,7 @@ class User(db.Model):
     id = Column(Integer, primary_key=True)
     e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
-    reserves = relationship('Reserve', backref='user', lazy=True)
+    reserves = db.relationship('Reserve', backref='user', lazy=True)
 
     def __init__(self, e_mail, address=""):
         self.e_mail = e_mail
