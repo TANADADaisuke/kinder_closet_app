@@ -119,6 +119,8 @@ def create_app(test_config=None):
                 clothes.type = body['type']
             if 'size'in keys:
                 clothes.size = body['size']
+            if 'status' in keys:
+                clothes.status = body['status']
             clothes.update()
             formatted_clothes = clothes.format()
         except Exception:
