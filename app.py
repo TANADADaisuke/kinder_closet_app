@@ -274,6 +274,8 @@ def create_app(test_config=None):
                 user.e_mail = body['e_mail']
             if 'address' in keys:
                 user.address = body['address']
+            if 'auth0_id' in keys:
+                user.auth0_id = body['auth0_id']
             user.update()
             formatted_user = user.format()
         except Exception:
