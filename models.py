@@ -59,7 +59,8 @@ class Clothes(db.Model):
             'id': self.id,
             'type': self.type,
             'size': self.size,
-            'registerd': self.registered_time
+            'registerd': self.registered_time,
+            'status': self.status
         }
 
 
@@ -100,6 +101,7 @@ class User(db.Model):
     def format(self):
         return {
             'id': self.id,
+            'auth0_id': self.auth0_id,
             'e_mail': self.e_mail,
             'address': self.address
         }
