@@ -230,7 +230,7 @@ def create_app(test_config=None):
         }
         """
         error = False
-        # get postd data from json request
+        # get posted data from json request
         body = request.get_json()
         # if request does not have json body, abort 400
         if body is None:
@@ -514,6 +514,104 @@ def create_app(test_config=None):
             'success': True,
             'deleted': user_id
         })
+    
+    @app.route('/users/<int:user_id>/reservations', methods=['POST'])
+    @requires_auth('post:reservations')
+    def create_reservations(payload, user_id):
+        """Post reservations to our server. Users can post reservations
+        through their own user_id. AuthError will be returned if trying
+        to post reservations through another user's user_id.
+
+        Returns: json object with following attribute
+        {
+            "success": True,
+            "reservations": list of clothes_id reserved,
+            "user": formatted user who has just reserved those clothes
+        }
+        """
+        error = False
+        # get posted data from json request
+        body = request.get_json()
+        keys = body.keys()
+        # if request does not have json body, abort 400
+        if body is None:
+            abort(400)
+        # if json does not have key 'auth0_id', abort 400
+        if 'auth0_id' not in keys:
+            abort(400)
+        # if json does not have key 'reservation', abort 400
+        if 'reservations' not in keys:
+            abort(400)
+        # if auth0_id in body does not match auth0_id in payload, abort 401
+        if body['auth0_id'] != payload['sub']:
+            abort(401)
+        
+        # query who is accessing
+        access_user = User.query.filter_by(auth0_id=payload['sub']).first()
+        formatted_access_user = access_user.format()
+        # check if user_id in URL matches the access user id
+        if user_id != access_user.id:
+            raise AuthError({
+                'code': 'Invalid_claims',
+                'description': 'Unauthorized access by user'
+            }, 401)
+        
+        # query clothes and store them in variable "clothes"
+        if not isinstance(body['reservations'], list):
+            abort(400)
+        for value in body['reservations']:
+            if not isinstance(value, int):
+                abort(400)
+        # check if all clothes indeed exist
+        clothes = []
+        for clothes_id in body['reservations']:
+            # query clothes
+            selection = Clothes.query.get(clothes_id)
+            if selection is None:
+                abort(404)
+            # if that clothes has been already reserved, abort 422
+            if selection.status == "reserved":
+                abort(422)
+            clothes.append(selection)
+
+        # make reservations
+        try:
+            reservations = []
+            for item in clothes:
+                new_reservation = Reserve(
+                    clothes_id=item.id,
+                    user_id=user_id
+                )
+                reservations.append(new_reservation)
+                item.status = "reserved"
+            # commit these reservations
+            for item in reservations:
+                item.insert()
+            for item in clothes:
+                item.update()
+        except Exception:
+            # rollback all sessions
+            for item in reservations:
+                item.rollback()
+            for item in clothes:
+                item.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            # close all sessions
+            for item in reservations:
+                item.close_session()
+            for item in clothes:
+                item.close_session()
+
+        if error:
+            abort(422)
+        else:
+            return jsonify({
+                'success': True,
+                'reservations': body['reservations'],
+                'user': formatted_access_user
+            })
 
     # Error Handling
     # ----------------------------------------
