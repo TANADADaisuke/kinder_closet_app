@@ -214,7 +214,7 @@ def create_app(test_config=None):
         return jsonify({
             'success': 'True',
             'clothes': clothes.format(),
-            'user': user.format()
+            'user': reserved_user.format()
         })
 
     @app.route('/clothes/<int:clothes_id>/reservations', methods=['POST'])
