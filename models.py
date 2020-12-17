@@ -74,13 +74,15 @@ class User(db.Model):
 
     id = Column(Integer, primary_key=True)
     auth0_id = Column(String(120), nullable=False, unique=True)
+    role = Column(String(12), nullable=False)
     e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
     reserves = db.relationship('Reserve', backref='user', lazy=True)
 
-    def __init__(self, e_mail, auth0_id, address=""):
+    def __init__(self, e_mail, auth0_id, role, address=""):
         self.e_mail = e_mail
         self.auth0_id = auth0_id
+        self.role = role
         self.address = address
     
     def insert(self):
@@ -104,6 +106,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'auth0_id': self.auth0_id,
+            'role': self.role,
             'e_mail': self.e_mail,
             'address': self.address
         }

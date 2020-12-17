@@ -393,12 +393,17 @@ def create_app(test_config=None):
         # if request does not have json body, abort 400
         if body is None:
             abort(400)
-        # if json does not have key 'e_mail' or 'auth0_id, abort 400
-        if 'e_mail' not in keys or 'auth0_id' not in keys:
+        # if json does not have key 'e_mail' or 'auth0_id, or 'role', abort 400
+        if 'e_mail' not in keys:
+            abort(400)
+        if 'auth0_id' not in keys:
+            abort(400)
+        if 'role' not in keys:
             abort(400)
         # create a new user
         e_mail = body['e_mail']
         auth0_id = body['auth0_id']
+        role = body['role']
         if 'address' in keys:
             address = body['address']
         else:
@@ -407,7 +412,8 @@ def create_app(test_config=None):
             user = User(
                 e_mail=e_mail,
                 address=address,
-                auth0_id=auth0_id
+                auth0_id=auth0_id,
+                role=role
             )
             user.insert()
             formatted_user = user.format()
@@ -454,6 +460,8 @@ def create_app(test_config=None):
                 user.address = body['address']
             if 'auth0_id' in keys:
                 user.auth0_id = body['auth0_id']
+            if 'role' in keys:
+                user.role = body['role']
             user.update()
             formatted_user = user.format()
         except Exception:
