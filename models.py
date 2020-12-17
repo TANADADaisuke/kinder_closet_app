@@ -116,7 +116,7 @@ class Reserve(db.Model):
     __tablename__ = 'reserves'
 
     id = Column(Integer, primary_key=True)
-    clothes_id = Column(Integer, ForeignKey('clothes.id'), nullable=False)
+    clothes_id = Column(Integer, ForeignKey('clothes.id'), nullable=False, unique=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     def __init__(self, clothes_id, user_id):
