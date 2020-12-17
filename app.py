@@ -175,12 +175,12 @@ def create_app(test_config=None):
         })
 
     @app.route('/clothes/<int:clothes_id>/reservations')
-    @requires_auth('get:self_reservations')
+    @requires_auth('get:reservations')
     def retrieve_clothes_reservations(payload, clothes_id):
-        """Retrieve reservation information about that clothes.
-        Users can retrieve information only when the reserved user
-        is yourself.
-        AUthError will be returned if user_id is not match.
+        """retrieve reservation information about that clothes.
+        Users can check theri own reservation information. AUthError will
+        be returned if trying to check another user's reservation.
+        Staffs and managers can retrieve all reservation information.
 
         Returns: json object with following attributes
         {
@@ -188,7 +188,6 @@ def create_app(test_config=None):
             'clothes': formatted clothes of the given clothes_id,
             'user': formatted user who has reserved that clothes,
         }
-        or, AuthError when accessing clothes other users have reserved.
         """
         selection = Reserve.query.filter_by(clothes_id=clothes_id).all()
         # if the given clothes has not been reserved, abort 404
@@ -197,13 +196,13 @@ def create_app(test_config=None):
         # if two or more user reserved the same clothe, abort umprocessable
         if len(selection) >= 2:
             abort(422)
-        # check if access user_id matches reservation user_id
-        # query user
-        user = User.query.get(selection[0].user_id)
-        reservation_user_id = user.auth0_id
-        access_user_id = payload['sub']
-        
-        if access_user_id != reservation_user_id:
+        # querying who is accessing and check role
+        access_user = User.query.filter_by(auth0_id=payload['sub']).first()
+        role = access_user.role
+        # if user role is "user", check if access user_id matches
+        # reservation user_id
+        reserved_user = User.query.get(selection[0].user_id)        
+        if role == 'user' and access_user.id != reserved_user.id:
             raise AuthError({
                 'code': 'Invalid_claims',
                 'description': 'Unauthorized access by user'
@@ -281,6 +280,70 @@ def create_app(test_config=None):
         else:
             return jsonify({
                 'success': True,
+                'clothes': formatted_clothes,
+                'user': formatted_user
+            })
+
+    @app.route('/clothes/<int:clothes_id>/reservations', methods=["DELETE"])
+    @requires_auth('delete:self_reservations')
+    def cancel_reservation(payload, clothes_id):
+        """Users can cancel their own reservations.
+        AUthError will be returned if user_id is not match.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': formatted clothes of the given clothes_id,
+            'user': formatted user who has canceled that reservation
+        }
+        or, AuthError when accessing clothes other users have reserved.
+        """
+        selection = Reserve.query.filter_by(clothes_id=clothes_id).all()
+        # if the given clothes has not been reserved, abort 404
+        if len(selection) == 0:
+            abort(404)
+        # if two or more user reserved the same clothe, abort umprocessable
+        if len(selection) >= 2:
+            abort(422)
+        # check if access user_id matches reservation user_id
+        reservation = selection[0]
+        # query user
+        user = User.query.get(reservation.user_id)
+        reservation_user_id = user.auth0_id
+        access_user_id = payload['sub']
+        
+        if access_user_id != reservation_user_id:
+            raise AuthError({
+                'code': 'Invalid_claims',
+                'description': 'Unauthorized access by user'
+            }, 401)
+
+        # query clothes
+        clothes = Clothes.query.get(reservation.clothes_id)
+
+        # set error status
+        error = False
+        # cancel that reservation
+        try:
+            reservation.delete()
+            clothes.status = ""
+            clothes.update()
+            formatted_clothes = clothes.format()
+            formatted_user = user.format()
+        except Exception:
+            reservation.rollback()
+            clothes.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            reservation.close_session()
+            clothes.close_session()
+        
+        if error:
+            abort(422)
+        else:
+            return jsonify({
+                'success': 'True',
                 'clothes': formatted_clothes,
                 'user': formatted_user
             })
