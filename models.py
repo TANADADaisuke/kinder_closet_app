@@ -74,7 +74,7 @@ class User(db.Model):
 
     id = Column(Integer, primary_key=True)
     auth0_id = Column(String(120), nullable=False, unique=True)
-    role = Column(String(12), nullable=True)
+    role = Column(String(12), nullable=False)
     e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
     reserves = db.relationship('Reserve', backref='user', lazy=True)
