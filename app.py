@@ -2,7 +2,7 @@ import os
 import sys
 from flask import Flask, request, jsonify, abort, render_template
 from flask_cors import CORS
-from models import setup_db, Clothes, User
+from models import setup_db, Clothes, User, Reserve
 from auth import requires_auth, AuthError
 
 def create_app(test_config=None):
@@ -48,7 +48,7 @@ def create_app(test_config=None):
 
     @app.route('/clothes', methods=['POST'])
     @requires_auth('post:clothes')
-    def create_person(payload):
+    def create_clothes(payload):
         """Post a new clothes to our database server.
 
         Returns: json object with following attributes
@@ -174,6 +174,117 @@ def create_app(test_config=None):
             'deleted': clothes_id
         })
 
+    @app.route('/clothes/<int:clothes_id>/reservations')
+    @requires_auth('get:self_reservations')
+    def retrieve_clothes_reservations(payload, clothes_id):
+        """Retrieve reservation information about that clothes.
+        Users can retrieve information only when the reserved user
+        is yourself.
+        AUthError will be returned if user_id is not match.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': formatted clothes of the given clothes_id,
+            'user': formatted user who has reserved that clothes,
+        }
+        or, AuthError when accessing clothes other users have reserved.
+        """
+        selection = Reserve.query.filter_by(clothes_id=clothes_id).all()
+        # if the given clothes has not been reserved, abort 404
+        if len(selection) == 0:
+            abort(404)
+        # if two or more user reserved the same clothe, abort umprocessable
+        if len(selection) >= 2:
+            abort(422)
+        # check if access user_id matches reservation user_id
+        # query user
+        user = User.query.get(selection[0].user_id)
+        reservation_user_id = user.auth0_id
+        access_user_id = payload['sub']
+        
+        if access_user_id != reservation_user_id:
+            raise AuthError({
+                'code': 'Invalid_claims',
+                'description': 'Unauthorized access by user'
+            }, 401)
+
+        # query clothes
+        clothes = Clothes.query.get(selection[0].clothes_id)
+
+        return jsonify({
+            'success': 'True',
+            'clothes': clothes.format(),
+            'user': user.format()
+        })
+
+    @app.route('/clothes/<int:clothes_id>/reservations', methods=['POST'])
+    @requires_auth('post:reservations')
+    def reserve_clothes(payload, clothes_id):
+        """Make a reservation.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': formatted clothes which has been just reserved,
+            'user': formatted user who has just reserved that clothes
+        }
+        """
+        error = False
+        # get postd data from json request
+        body = request.get_json()
+        # if request does not have json body, abort 400
+        if body is None:
+            abort(400)
+        # if json does not have key 'auth0_id', abort 400
+        if 'auth0_id' not in body.keys():
+            abort(400)
+        # if auth0_id in body does not match auth0_id in payload, abort 401
+        if body['auth0_id'] != payload['sub']:
+            abort(401)
+
+        # query user
+        user = User.query.filter_by(auth0_id=payload['sub']).all()
+        user = user[0]
+
+        # query clothes
+        clothes = Clothes.query.get(clothes_id)
+        if clothes is None:
+            abort(404)
+        # if the clothes has already been reserved, abort 422
+        if clothes.status == "reserved":
+            abort(422)
+
+        # store reservation data in database
+        try:
+            reservation = Reserve(
+                clothes_id=clothes.id,
+                user_id=user.id
+            )
+            reservation.insert()
+
+            clothes.status = "reserved"
+            clothes.update()
+            formatted_clothes = clothes.format()
+            formatted_user = user.format()
+        except Exception:
+            reservation.rollback()
+            clothes.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            reservation.close_session()
+            clothes.close_session()
+        
+        if error:
+            abort(422)
+        else:
+            return jsonify({
+                'success': True,
+                'clothes': formatted_clothes,
+                'user': formatted_user
+            })
+
     # Users
     # ----------------------------------------
     @app.route('/users')
@@ -219,11 +330,12 @@ def create_app(test_config=None):
         # if request does not have json body, abort 400
         if body is None:
             abort(400)
-        # if json does not have key 'e_mail', abort 400
-        if 'e_mail' not in keys:
+        # if json does not have key 'e_mail' or 'auth0_id, abort 400
+        if 'e_mail' not in keys or 'auth0_id' not in keys:
             abort(400)
         # create a new user
         e_mail = body['e_mail']
+        auth0_id = body['auth0_id']
         if 'address' in keys:
             address = body['address']
         else:
@@ -231,7 +343,8 @@ def create_app(test_config=None):
         try:
             user = User(
                 e_mail=e_mail,
-                address=address
+                address=address,
+                auth0_id=auth0_id
             )
             user.insert()
             formatted_user = user.format()

@@ -31,9 +31,10 @@ class Clothes(db.Model):
     status = Column(String(20))
     reserves = db.relationship('Reserve', backref='clothes', lazy=True)
 
-    def __init__(self, type, size):
+    def __init__(self, type, size, status=""):
         self.type = type
         self.size = size
+        self.status = status
 
     def insert(self):
         self.registered_time = datetime.utcnow()
@@ -77,8 +78,9 @@ class User(db.Model):
     address = Column(String(500))
     reserves = db.relationship('Reserve', backref='user', lazy=True)
 
-    def __init__(self, e_mail, address=""):
+    def __init__(self, e_mail, auth0_id, address=""):
         self.e_mail = e_mail
+        self.auth0_id = auth0_id
         self.address = address
     
     def insert(self):
@@ -116,3 +118,24 @@ class Reserve(db.Model):
     id = Column(Integer, primary_key=True)
     clothes_id = Column(Integer, ForeignKey('clothes.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+    def __init__(self, clothes_id, user_id):
+        self.clothes_id = clothes_id
+        self.user_id = user_id
+    
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+    
+    def update(self):
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+    
+    def rollback(self):
+        db.session.rollback()
+    
+    def close_session(self):
+        db.session.close()
