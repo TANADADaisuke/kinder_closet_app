@@ -94,16 +94,31 @@ class ClosetAppTestCase(unittest.TestCase):
         response = []
         for item_data in users:
             res = self.client().post(
-                'users',
+                '/users',
                 json=item_data,
                 headers=self.manager_headers)
             data = json.loads(res.data)
             response.append(data)
 
-        # set test ids for patch and delete method test 
+        # set user ids for sequencing tests
         self.user_id = response[0]['user']['id']
         self.extra_user_id = response[1]['user']['id']
-    
+
+        # ------------------------------
+        # make a reservation (with user JWT)
+        # ------------------------------
+        res = self.clinet().post(
+            '/clothes/{}/reservations'.format(self.clothes_id),
+            json={"auth0_id":"google-oauth2|103606340396848658678"},
+            headers=self.user_headers)
+        data = json.loads(res.data)
+
+        # store reservation information for sequence tests
+        self.reservation = {
+            'clothes': data['clothes'],
+            'user': data['user']
+        }
+
     def tearDown(self):
         """Excecuted after reach test"""
         pass
