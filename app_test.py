@@ -401,9 +401,6 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['type'], clothes_type)
         self.assertEqual(data['clothes']['size'], float(size))
 
-        # set clothes id for sequencing tests
-        os.environ['TEST_CLOTHES_ID'] = str(data['clothes']['id'])
-
     def test_staff_2_retrieve_clothes(self):
         """GET /clothes
         Test retrieving all clothes with staff JWT.
@@ -541,9 +538,6 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['type'], clothes_type)
         self.assertEqual(data['clothes']['size'], float(size))
 
-        # set clothes id for sequencing tests
-        os.environ['TEST_CLOTHES_ID'] = str(data['clothes']['id'])
-
     def test_manager_2_retrieve_clothes(self):
         """GET /clothes
         Test retrieving all clothes with manager JWT.
@@ -613,9 +607,6 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['user']['e_mail'], e_mail)
         self.assertEqual(data['user']['address'], address)
-
-        # set users id for sequencing tests
-        os.environ['TEST_USER_ID'] = str(data['user']['id'])
 
     def test_manager_2_retrieve_users(self):
         """GET /users
