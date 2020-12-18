@@ -515,6 +515,50 @@ def create_app(test_config=None):
             'deleted': user_id
         })
     
+    @app.route('/users/<int:user_id>/reservations')
+    @requires_auth('get:reservations')
+    def retrieve_user_reservations(payload, user_id):
+        """Get all reservations which the given user has made.
+        Users can get reservations only through their own user_id.
+        AuthError will be raised if trying to see another user's
+        reservation.
+        Staffs and managers can retrieve all reservation information.
+
+        Returns: json object with following attributes
+        {
+            'success': True,
+            'clothes': list of formatted clothes which the given user has reserved,
+            'user': formatted user who has reserved those clothes
+        }
+        """
+        # check if that user indeed exists
+        user = User.query.get(user_id)
+        if user is None:
+            abort(404)
+        # querying who is accessing and check role
+        access_user = User.query.filter_by(auth0_id=payload['sub']).first()
+        role = access_user.role
+        # if user role is "user", check if access user_id matches     
+        if role == 'user' and access_user.id != user_id:
+            raise AuthError({
+                'code': 'Invalid_claims',
+                'description': 'Unauthorized access by user'
+            }, 401)
+
+        # query reserations
+        reservations = Reserve.query.filter_by(user_id=user_id).all()
+        # query clothes
+        clothes = []
+        for reservation in reservations:
+            item = Clothes.query.get(reservation.clothes_id)
+            clothes.append(item.format())
+        
+        return jsonify({
+            'success': True,
+            'clothes': clothes,
+            'user': user.format()
+        })
+
     @app.route('/users/<int:user_id>/reservations', methods=['POST'])
     @requires_auth('post:reservations')
     def create_reservations(payload, user_id):
