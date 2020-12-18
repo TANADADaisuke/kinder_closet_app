@@ -122,11 +122,15 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
+        auth0_id = 'google-oauth2|103606340396848658678'
+        role = 'user'
         res = self.client().post(
             '/users',
             json={
                 'e_mail': e_mail,
-                'address': address
+                'address': address,
+                'auth0_id': auth0_id,
+                'role': role
             })
         data = json.loads(res.data)
 
@@ -248,11 +252,15 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
+        auth0_id = 'google-oauth2|103606340396848658678'
+        role = 'user'
         res = self.client().post(
             '/users',
             json={
                 'e_mail': e_mail,
-                'address': address
+                'address': address,
+                'auth0_id': auth0_id,
+                'role': role
             },
             headers=self.user_headers)
         data = json.loads(res.data)
@@ -384,11 +392,15 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
+        auth0_id = 'google-oauth2|103606340396848658678'
+        role = 'user'
         res = self.client().post(
             '/users',
             json={
                 'e_mail': e_mail,
-                'address': address
+                'address': address,
+                'auth0_id': auth0_id,
+                'role': role
             },
             headers=self.staff_headers)
         data = json.loads(res.data)
@@ -520,11 +532,15 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
+        auth0_id = 'google-oauth2|103606340396848658678'
+        role = 'user'
         res = self.client().post(
             '/users',
             json={
                 'e_mail': e_mail,
-                'address': address
+                'address': address,
+                'auth0_id': auth0_id,
+                'role': role
             },
             headers=self.manager_headers)
         data = json.loads(res.data)
