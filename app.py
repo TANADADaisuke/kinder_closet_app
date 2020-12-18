@@ -569,7 +569,7 @@ def create_app(test_config=None):
         Returns: json object with following attribute
         {
             "success": True,
-            "reservations": list of clothes_id reserved,
+            "clothes": list of formatted clothes which has been just reserved,
             "user": formatted user who has just reserved those clothes
         }
         """
@@ -621,6 +621,7 @@ def create_app(test_config=None):
         # make reservations
         try:
             reservations = []
+            formatted_clothes = []
             for item in clothes:
                 new_reservation = Reserve(
                     clothes_id=item.id,
@@ -633,6 +634,7 @@ def create_app(test_config=None):
                 item.insert()
             for item in clothes:
                 item.update()
+                formatted_clothes.append(item.format())
         except Exception:
             # rollback all sessions
             for item in reservations:
@@ -653,7 +655,7 @@ def create_app(test_config=None):
         else:
             return jsonify({
                 'success': True,
-                'reservations': body['reservations'],
+                'clothes': formatted_clothes,
                 'user': formatted_access_user
             })
     
