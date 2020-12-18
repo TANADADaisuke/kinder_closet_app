@@ -36,9 +36,73 @@ class ClosetAppTestCase(unittest.TestCase):
             'Authorization': 'Bearer {}'.format(os.environ['MANAGER_JWT'])
         }
 
-        # set test ids for patch and delete method test
-        self.clothes_id = os.environ['TEST_CLOTHES_ID']
-        self.user_id = os.environ['TEST_USER_ID']
+        # set up initial clothes and users
+        # using manager JWT and create clothes and users
+        # ------------------------------
+        # delete all existing clothes and users
+        # ------------------------------   
+        res = self.client().get(
+            '/clothes',
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+        for clothes in data['clothes']:
+            res = self.client().delete(
+                '/clothes/{}'.format(clothes['id']),
+                headers=self.manager_headers)
+        res = self.client().get(
+            '/users',
+            headers=self.manager_headers)
+        data = json.loads(res.data)
+        for user in data['users']:
+            res = self.client().delete(
+                '/users/{}'.format(user['id']),
+                headers=self.manager_headers)
+        
+        # ------------------------------
+        # create clothes
+        # ------------------------------   
+        clothes = [
+            {'type': 'shirt', 'size': '100'},
+            {'type': 'pants', 'size': '120'}
+        ]
+        response = []
+        for item_data in clothes:
+            res = self.client().post(
+                '/clothes',
+                json=item_data,
+                headers=self.manager_headers)
+            data = json.loads(res.data)
+            response.append(data)
+
+        # set clothes id for sequencing tests
+        self.clothes_id = response[0]['clothes']['id']
+        self.extra_clothes_id = response[1]['clothes']['id']
+
+        # ------------------------------
+        # create users
+        # ------------------------------   
+        users = [
+            {"e_mail":"testuser1@kinder-reuse-closet.com",
+            "address":"Bunkyo-ku, Tokyo",
+            "auth0_id":"google-oauth2|103606340396848658678",
+            "role":"user"},
+            {"e_mail":"testuser2@kinder-reuse-closet.com",
+            "address":"Shibuya-ku, Tokyo",
+            "auth0_id":"auth0|5fdb49c07567970069085ee9",
+            "role":"user"}
+        ]
+        response = []
+        for item_data in users:
+            res = self.client().post(
+                'users',
+                json=item_data,
+                headers=self.manager_headers)
+            data = json.loads(res.data)
+            response.append(data)
+
+        # set test ids for patch and delete method test 
+        self.user_id = response[0]['user']['id']
+        self.extra_user_id = response[1]['user']['id']
     
     def tearDown(self):
         """Excecuted after reach test"""
@@ -122,7 +186,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
-        auth0_id = 'google-oauth2|103606340396848658678'
+        auth0_id = 'auth0|testing'
         role = 'user'
         res = self.client().post(
             '/users',
@@ -252,7 +316,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
-        auth0_id = 'google-oauth2|103606340396848658678'
+        auth0_id = 'auth0|testing'
         role = 'user'
         res = self.client().post(
             '/users',
@@ -392,7 +456,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
-        auth0_id = 'google-oauth2|103606340396848658678'
+        auth0_id = 'auth0|testing'
         role = 'user'
         res = self.client().post(
             '/users',
@@ -532,7 +596,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         e_mail = 'test1@kinder-reuse-closet.com'
         address = 'Minato-ku, Tokyo'
-        auth0_id = 'google-oauth2|103606340396848658678'
+        auth0_id = 'auth0|testing'
         role = 'user'
         res = self.client().post(
             '/users',
