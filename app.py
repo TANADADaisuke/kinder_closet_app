@@ -656,6 +656,75 @@ def create_app(test_config=None):
                 'reservations': body['reservations'],
                 'user': formatted_access_user
             })
+    
+    @app.route('/users/<int:user_id>/reservations', methods=['DELETE'])
+    @requires_auth('delete:reservations')
+    def delete_reservations(payload, user_id):
+        """Delete all reservations which the given user has made.
+        Users can delete reservations through their own user_id.
+        AuthError will be returned if trying to delete reservations
+        through another user's user_id.
+        Staffs and managers can delete any reservations.
+
+        Returns: json object with following attribute
+        {
+            "success": True,
+            "clothes": list of formatted clothes of which reservations 
+                       have been just deleted,
+            "user": formatted user who has just canceled those reservations
+        }
+        """
+        # check if that user indeed exists
+        user = User.query.get(user_id)
+        if user is None:
+            abort(404)
+        # querying who is accessing and check role
+        access_user = User.query.filter_by(auth0_id=payload['sub']).first()
+        role = access_user.role
+        # if user role is "user", check if access user_id matches     
+        if role == 'user' and access_user.id != user_id:
+            raise AuthError({
+                'code': 'Invalid_claims',
+                'description': 'Unauthorized access by user'
+            }, 401)
+
+        # delete reservations
+        error = False
+        formatted_user = user.format()
+        reservations = Reserve.query.filter_by(user_id=user_id).all()
+        try:
+            clothes = []
+            formatted_clothes = []
+            for reservation in reservations:
+                item = Clothes.query.get(reservation.clothes_id)
+                item.status = ""
+                clothes.append(item)
+            for reservation in reservations:
+                reservation.delete()
+            for item in clothes:
+                item.update()
+                formatted_clothes.append(item.format())
+        except Exception:
+            for reservation in reservations:
+                reservation.rollback()
+            for item in clothes:
+                item.rollback()
+            error = True
+            print(sys.exc_info())
+        finally:
+            for reservation in reservations:
+                reservation.close_session()
+            for item in clothes:
+                item.close_session()
+
+        if error:
+            abort(422)
+        else:
+            return jsonify({
+                'success': True,
+                'clothes': formatted_clothes,
+                'user': formatted_user
+            })
 
     # Error Handling
     # ----------------------------------------
