@@ -214,7 +214,7 @@ def create_app(test_config=None):
         clothes = reservation.clothes
 
         return jsonify({
-            'success': 'True',
+            'success': True,
             'clothes': clothes.format(),
             'user': reserved_user.format()
         })
@@ -340,7 +340,7 @@ def create_app(test_config=None):
             abort(422)
         else:
             return jsonify({
-                'success': 'True',
+                'success': True,
                 'clothes': formatted_clothes,
                 'user': formatted_user
             })
