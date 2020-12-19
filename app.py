@@ -629,7 +629,7 @@ def create_app(test_config=None):
             # commit these reservations
             for reservation in reservations:
                 reservation.insert()
-                formatted_clothes.append(item.format())
+                formatted_clothes.append(reservation.format())
         except Exception:
             # rollback all sessions
             for reservation in reservations:
