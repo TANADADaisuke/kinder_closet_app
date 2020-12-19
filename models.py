@@ -29,7 +29,12 @@ class Clothes(db.Model):
     size = Column(Float, nullable=False)
     registered_time = Column(DateTime, nullable=False)
     status = Column(String(20))
-    reserves = db.relationship('Reserve', backref='clothes', lazy=True)
+    reserves = db.relationship(
+        'Reserve',
+        backref='clothes',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
 
     def __init__(self, type, size, status=""):
         self.type = type
@@ -77,7 +82,12 @@ class User(db.Model):
     role = Column(String(12), nullable=False)
     e_mail = Column(String(120), nullable=False, unique=True)
     address = Column(String(500))
-    reserves = db.relationship('Reserve', backref='user', lazy=True)
+    reserves = db.relationship(
+        'Reserve',
+        backref='user',
+        lazy=True,
+        cascade='all, delete-orphan'
+        )
 
     def __init__(self, e_mail, auth0_id, role, address=""):
         self.e_mail = e_mail
