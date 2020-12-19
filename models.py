@@ -121,10 +121,6 @@ class Reserve(db.Model):
     id = Column(Integer, primary_key=True)
     clothes_id = Column(Integer, ForeignKey('clothes.id'), nullable=False, unique=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-
-    def __init__(self, clothes_id, user_id):
-        self.clothes_id = clothes_id
-        self.user_id = user_id
     
     def insert(self):
         db.session.add(self)

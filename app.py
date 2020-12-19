@@ -196,12 +196,14 @@ def create_app(test_config=None):
         # if two or more user reserved the same clothe, abort umprocessable
         if len(selection) >= 2:
             abort(422)
+        reservation = selection[0]
+
         # querying who is accessing and check role
         access_user = User.query.filter_by(auth0_id=payload['sub']).first()
         role = access_user.role
         # if user role is "user", check if access user_id matches
         # reservation user_id
-        reserved_user = User.query.get(selection[0].user_id)        
+        reserved_user = reservation.user        
         if role == 'user' and access_user.id != reserved_user.id:
             raise AuthError({
                 'code': 'Invalid_claims',
@@ -209,7 +211,7 @@ def create_app(test_config=None):
             }, 401)
 
         # query clothes
-        clothes = Clothes.query.get(selection[0].clothes_id)
+        clothes = reservation.clothes
 
         return jsonify({
             'success': 'True',
@@ -243,8 +245,7 @@ def create_app(test_config=None):
             abort(401)
 
         # query user
-        user = User.query.filter_by(auth0_id=payload['sub']).all()
-        user = user[0]
+        user = User.query.filter_by(auth0_id=payload['sub']).first()
 
         # query clothes
         clothes = Clothes.query.get(clothes_id)
@@ -256,19 +257,16 @@ def create_app(test_config=None):
 
         # store reservation data in database
         try:
-            reservation = Reserve(
-                clothes_id=clothes.id,
-                user_id=user.id
-            )
+            reservation = Reserve()
+            reservation.clothes = clothes
+            reservation.user = user
+            clothes.status = "reserved"
             reservation.insert()
 
-            clothes.status = "reserved"
-            clothes.update()
             formatted_clothes = clothes.format()
             formatted_user = user.format()
         except Exception:
             reservation.rollback()
-            clothes.rollback()
             error = True
             print(sys.exc_info())
         finally:
@@ -312,7 +310,7 @@ def create_app(test_config=None):
         role = access_user.role
         # if user role is "user", check if access user_id matches
         # reservation user_id
-        reservation_user = User.query.get(reservation.user_id)
+        reservation_user = reservation.user
         if role == 'user' and access_user.id != reservation_user.id:
             raise AuthError({
                 'code': 'Invalid_claims',
@@ -320,20 +318,18 @@ def create_app(test_config=None):
             }, 401)
 
         # query clothes
-        clothes = Clothes.query.get(reservation.clothes_id)
+        clothes = reservation.clothes
 
         # set error status
         error = False
         # cancel that reservation
         try:
-            reservation.delete()
             clothes.status = ""
-            clothes.update()
+            reservation.delete()
             formatted_clothes = clothes.format()
             formatted_user = reservation_user.format()
         except Exception:
             reservation.rollback()
-            clothes.rollback()
             error = True
             print(sys.exc_info())
         finally:
@@ -550,8 +546,7 @@ def create_app(test_config=None):
         # query clothes
         clothes = []
         for reservation in reservations:
-            item = Clothes.query.get(reservation.clothes_id)
-            clothes.append(item.format())
+            clothes.append(reservation.clothes.format())
         
         return jsonify({
             'success': True,
@@ -592,7 +587,6 @@ def create_app(test_config=None):
         
         # query who is accessing
         access_user = User.query.filter_by(auth0_id=payload['sub']).first()
-        formatted_access_user = access_user.format()
         # check if user_id in URL matches the access user id
         if user_id != access_user.id:
             raise AuthError({
@@ -618,37 +612,34 @@ def create_app(test_config=None):
                 abort(422)
             clothes.append(selection)
 
+        # query user
+        user = User.query.get(user_id)
+        formatted_user = user.format()
+
         # make reservations
         try:
             reservations = []
             formatted_clothes = []
             for item in clothes:
-                new_reservation = Reserve(
-                    clothes_id=item.id,
-                    user_id=user_id
-                )
-                reservations.append(new_reservation)
+                new_reservation = Reserve()
+                new_reservation.user = user
+                new_reservation.clothes = item
                 item.status = "reserved"
+                reservations.append(new_reservation)
             # commit these reservations
-            for item in reservations:
-                item.insert()
-            for item in clothes:
-                item.update()
+            for reservation in reservations:
+                reservation.insert()
                 formatted_clothes.append(item.format())
         except Exception:
             # rollback all sessions
-            for item in reservations:
-                item.rollback()
-            for item in clothes:
-                item.rollback()
+            for reservation in reservations:
+                reservation.rollback()
             error = True
             print(sys.exc_info())
         finally:
             # close all sessions
-            for item in reservations:
-                item.close_session()
-            for item in clothes:
-                item.close_session()
+            for reservation in reservations:
+                reservation.close_session()
 
         if error:
             abort(422)
@@ -656,7 +647,7 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'clothes': formatted_clothes,
-                'user': formatted_access_user
+                'user': formatted_user
             })
     
     @app.route('/users/<int:user_id>/reservations', methods=['DELETE'])
@@ -695,29 +686,22 @@ def create_app(test_config=None):
         formatted_user = user.format()
         reservations = Reserve.query.filter_by(user_id=user_id).all()
         try:
-            clothes = []
             formatted_clothes = []
             for reservation in reservations:
-                item = Clothes.query.get(reservation.clothes_id)
-                item.status = ""
-                clothes.append(item)
+                clothes = reservation.clothes
+                clothes.status = ""
+                formatted_clothes.append(clothes.format())
+            # commit deletion
             for reservation in reservations:
                 reservation.delete()
-            for item in clothes:
-                item.update()
-                formatted_clothes.append(item.format())
         except Exception:
             for reservation in reservations:
                 reservation.rollback()
-            for item in clothes:
-                item.rollback()
             error = True
             print(sys.exc_info())
         finally:
             for reservation in reservations:
                 reservation.close_session()
-            for item in clothes:
-                item.close_session()
 
         if error:
             abort(422)
