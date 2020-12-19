@@ -107,7 +107,7 @@ class ClosetAppTestCase(unittest.TestCase):
         # ------------------------------
         # make a reservation (with user JWT)
         # ------------------------------
-        res = self.clinet().post(
+        res = self.client().post(
             '/clothes/{}/reservations'.format(self.clothes_id),
             json={"auth0_id":"google-oauth2|103606340396848658678"},
             headers=self.user_headers)
