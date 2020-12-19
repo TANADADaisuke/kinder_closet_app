@@ -216,6 +216,45 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
 
+    def test_public_6_forbidden_make_a_reservation(self):
+        """POST /clothes/<id>/reservations
+        Public access for posting a reservation is forbidden.
+        """
+        res = self.client().post(
+            'clothes/{}/reservations'.format(self.extra_clothes_id),
+            json = {"auth0_id": self.user_auth0_id})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    def test_public_7_forbidden_get_a_reservation(self):
+        """GET /clothes/<id>/reservations
+        Public access for retrieving a reservation is forbidden.
+        """
+        res = self.client().get(
+            'clothes/{}/reservations'.format(self.clothes_id)
+            )
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+    
+    def test_public_8_forbidden_delete_a_reservation(self):
+        """DELETE /clothes/<id>/reservations
+        Public access for deleting a reservation is forbidden.
+        """
+        res = self.client().delete(
+            'clothes/{}/reservations'.format(self.clothes_id)
+            )
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
     # ------------------------------
     # access to users endpoints
     # ------------------------------
@@ -273,6 +312,48 @@ class ClosetAppTestCase(unittest.TestCase):
         Public access is forbidden for deleting given user.
         """
         res = self.client().delete('/users/{}'.format(self.user_id))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    def test_public_5_forbidden_make_several_reservations(self):
+        """POST /users/<id>/reservations
+        Public access is forbidden for making several reservations.
+        """
+        res = self.client().post(
+            'users/{}/reservations'.format(self.user_id),
+            json = {
+                "auth0_id": self.user_auth0_id,
+                "reservations": [self.extra_clothes_id]
+            })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+
+    def test_public_6_forbidden_get_reservations(self):
+        """GET /users/<id>/reservations
+        Public access is forbidden for retrieving reservations.
+        """
+        res = self.client().get(
+            'users/{}/reservations'.format(self.user_id)
+            )
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'authorization_header_missing')
+    
+    def test_public_7_forbidden_delete_reservations(self):
+        """DELETE /users/<id>/reservations
+        Public access is forbidden for deletind user's all reservations.
+        """
+        res = self.client().delete(
+            'users/{}/reservations'.format(self.user_id)
+            )
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 401)
