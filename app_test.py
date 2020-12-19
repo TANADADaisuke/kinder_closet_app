@@ -103,6 +103,26 @@ class ClosetAppTestCase(unittest.TestCase):
                 headers=self.manager_headers)
             data = json.loads(res.data)
             response.append(data)
+        staff = {
+            "e_mail":"teststaff@kinder-reuse-closet.com",
+            "address":"Shibuya-ku, Tokyo",
+            "auth0_id":"auth0|5fadbe9e64abac00751e7c61",
+            "role":"staff"
+        }
+        res = self.client().post(
+            '/users',
+            json=staff,
+            headers=self.manager_headers)
+        manager = {
+            "e_mail":"testmanager@kinder-reuse-closet.com",
+            "address":"Shibuya-ku, Tokyo",
+            "auth0_id":"auth0|5f6d247925dd140078ffbefc",
+            "role":"manager"
+        }
+        res = self.client().post(
+            '/users',
+            json=manager,
+            headers=self.manager_headers)
 
         # set user ids for sequencing tests
         self.user_id = response[0]['user']['id']
@@ -515,7 +535,7 @@ class ClosetAppTestCase(unittest.TestCase):
     
     def test_user_8_delete_reservations(self):
         """DELETE /users/<id>/reservations
-        Test delete all user's reservations with user JWT.
+        Test delete user's all reservations with user JWT.
         """
         res = self.client().delete(
             'users/{}/reservations'.format(self.user_id),
@@ -609,6 +629,50 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], int(self.clothes_id))
 
+    def test_staff_5_forbidden_make_a_reservation(self):
+        """POST /clothes/<id>/reservations
+        Posting a reservation with staff JWT is forbidden.
+        """
+        res = self.client().post(
+            'clothes/{}/reservations'.format(self.extra_clothes_id),
+            json = {"auth0_id": self.user_auth0_id},
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_staff_6_get_a_reservation(self):
+        """GET /clothes/<id>/reservations
+        Test retrieve a reservation with staff JWT.
+        """
+        res = self.client().get(
+            'clothes/{}/reservations'.format(self.clothes_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['id'], self.clothes_id)
+        self.assertEqual(data['clothes']['status'], "reserved")
+        self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
+    
+    def test_staff_7_delete_a_reservation(self):
+        """DELETE /clothes/<id>/reservations
+        Test delete a reservation with staff JWT.
+        """
+        res = self.client().delete(
+            'clothes/{}/reservations'.format(self.clothes_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes']['id'], self.clothes_id)
+        self.assertEqual(data['clothes']['status'], "")
+        self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
+
     # ------------------------------
     # access to users endpoints
     # ------------------------------
@@ -677,6 +741,53 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
+
+    def test_staff_5_forbidden_make_several_reservations(self):
+        """POST /users/<id>/reservations
+        Test making several reservations with staff JWT.
+        """
+        res = self.client().post(
+            'users/{}/reservations'.format(self.user_id),
+            json = {
+                "auth0_id": self.user_auth0_id,
+                "reservations": [self.extra_clothes_id]
+            },
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unauthorized')
+
+    def test_staff_6_get_reservations(self):
+        """GET /users/<id>/reservations
+        Test retrieve reservations with staff JWT.
+        """
+        res = self.client().get(
+            'users/{}/reservations'.format(self.user_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes'][0]['id'], self.clothes_id)
+        self.assertEqual(data['clothes'][0]['status'], "reserved")
+        self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
+    
+    def test_staff_7_delete_reservations(self):
+        """DELETE /users/<id>/reservations
+        Test delete user's all reservations with staff JWT.
+        """
+        res = self.client().delete(
+            'users/{}/reservations'.format(self.user_id),
+            headers=self.staff_headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['clothes'][0]['id'], self.clothes_id)
+        self.assertEqual(data['clothes'][0]['status'], "")
+        self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
 
     # Test for manager access
     # ------------------------------------------------
