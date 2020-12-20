@@ -68,7 +68,7 @@ python app.py
 - Authentication: For accessing each endpoint described below, authorization header is required.
 'Authrozation: Bearer JWT'
 
-## Deployed version hosted URL
+## Deploy version hosted URL
 
 This application is hosted via Heroku.
 
@@ -83,18 +83,294 @@ This application is hosted via Heroku.
 We have the following endpoints.
 - Endpoints:
   - GET /clothes and /users
-  - GET /clothes/<id> and /uses/<id>
-  - GET /clothes/<id>/reservations and /user/<id>/reservations
+  - GET /clothes/{clothes_id} and /uses/{user_id}
+  - GET /clothes/{clothes_id}/reservations and /user/{user_id}/reservations
   - POST /clothes and /users
-  - POST /clothes/<id>/reservations and /users/<id>/reservations
-  - PATCH /clothes/<id> and /users/<id>
-  - DELETE /clothes/<id> and /users/<id>
-  - DELETE /clothes/<id>/reservations and /users/<id>/reservations
+  - POST /clothes/{clothes_id}/reservations and /users/{user_id}/reservations
+  - PATCH /clothes/{clothes_id} and /users/{user_id}
+  - DELETE /clothes/{clothes_id} and /users/{user_id}
+  - DELETE /clothes/{clothes_id}/reservations and /users/{user_id}/reservations
 
 Details are described below.
 
 ### GET /clothes
+- General:
+  - Get clothes from our database server.
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns: json object with following attributes
+    {
+        'success': True,
+        'total': num of clothes stored in our server,
+        'clothes': array of each formatted clothes
+    }
+- Samples:
+  - Request: 'curl http://0.0.0.0:8080/clothes -H 'Authorization: Bearer JWT'
+  - Response:'''
+    {
+        "clothes": [
+            {
+                "id": 6,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 120.0,
+                "status": "reserved",
+                "type": "shirt"
+            },
+            {
+                "id": 7,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 15.5,
+                "status": "reserved",
+                "type": "shoes"
+            },
+            {
+                "id": 9,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 13.5,
+                "status": "",
+                "type": "shoes"
+            },
+            {
+                "id": 11,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 100.0,
+                "status": "reserved",
+                "type": "shirt"
+            },
+            {
+                "id": 12,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 100.0,
+                "status": "",
+                "type": "shirt"
+            },
+            {
+                "id": 14,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 100.0,
+                "status": "",
+                "type": "shirt"
+            },
+            {
+                "id": 15,
+                "registerd": "Fri, 11 Dec 2020 12:51:19 GMT",
+                "size": 90.0,
+                "status": null,
+                "type": "shirt"
+            },
+            {
+                "id": 16,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 90.0,
+                "status": "",
+                "type": "shirt"
+            },
+            {
+                "id": 17,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 90.0,
+                "status": "",
+                "type": "shirt"
+            },
+            {
+                "id": 18,
+                "registerd": "Fri, 11 Dec 2020 12:56:39 GMT",
+                "size": 90.0,
+                "status": null,
+                "type": "shirt"
+            },
+            {
+                "id": 20,
+                "registerd": "Thu, 17 Dec 2020 15:34:26 GMT",
+                "size": 90.0,
+                "status": "",
+                "type": "shirt"
+            }
+        ],
+        "success": true,
+        "total": 11
+    }
+  '''
 
+### GET /users
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### GET /clothes/{clothes_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### GET /users/{user_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### GET /clothes/{clothes_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### GET /users/{user_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### POST /clothes
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### POST /users
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### POST /clothes/{clothes_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### POST /users/{user_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### PATCH /clothes/{clothes_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### PATCH /users/{user_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### DELETE /clothes/{clothes_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### DELETE /users/{user_id}
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### DELETE /clothes/{clothes_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
+
+### DELETE /users/{user_id}/reservations
+- General:
+  - 
+  - Request Arguments: None
+  - Role Base Access Control: User role is required.
+  - Returns:
+- Samples:
+  - Request:
+  - Response:'''
+
+  '''
 
 ## Testing
 To run the tests, first create test database and set it in environment variable.

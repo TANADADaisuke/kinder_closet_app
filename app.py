@@ -47,7 +47,7 @@ def create_app(test_config=None):
             'clothes': array of each formatted clothes
         }
         """
-        selection = Clothes.query.all()
+        selection = Clothes.query.order_by(Clothes.id).all()
         clothes = []
         for item in selection:
             formatted_clothes = item.format()
