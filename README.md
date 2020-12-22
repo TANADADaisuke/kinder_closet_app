@@ -621,6 +621,7 @@ Details are described below.
 
 ## Testing
 To run the tests, first create test database and set it in environment variable.
+
 '''bash
 export TEST_DATABASE_URL='YOUR_TEST_DATABASE_URL'
 dropdb TEST_DATABASE && createdb TEST_DATABASE
