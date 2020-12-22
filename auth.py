@@ -10,6 +10,7 @@ AUTH_DOMAIN = os.environ['AUTH_DOMAIN']
 ALGORITHMS = os.environ['ALGORITHMS']
 API_AUDIENCE = os.environ['API_AUDIENCE']
 
+
 # AuthError Exception
 # A standardized way to communicate auth failuer modes
 class AuthError(Exception):
@@ -25,7 +26,7 @@ def get_token_auth_header():
     Returns: JWT string
 
     Note: AuthError will be rainsed if HTTP request header does not
-          contain Authorization header or Authorization header is 
+          contain Authorization header or Authorization header is
           not 'Bearer JWT' format.
     """
     auth = request.headers.get('Authorization', None)
@@ -34,28 +35,28 @@ def get_token_auth_header():
             'code': 'authorization_header_missing',
             'description': 'Authorization header is expected'
         }, 401)
-    
+
     parts = auth.split()
     if parts[0].lower() != 'bearer':
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Authorization header must start with "Bearer".'
         }, 401)
-    
+
     elif len(parts) == 1:
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Token not found.'
         }, 401)
-    
+
     elif len(parts) > 2:
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Authorization header must be bearer token'
         }, 401)
-    
+
     token = parts[1]
-    
+
     return token
 
 
@@ -63,7 +64,7 @@ def check_permissions(permission, payload):
     """check if the role is included in JWT payload.
 
     Returns: True if the role is indeed included
-    
+
     Note: AuthError will be raised if permissions are not included
           in JWT payload or the role is not included in the payload.
     """
@@ -72,13 +73,13 @@ def check_permissions(permission, payload):
             'code': 'invalid_claims',
             'description': 'Permissions not included in JWT.'
         }, 400)
-    
+
     if permission not in payload['permissions']:
         raise AuthError({
             'code': 'unauthorized',
             'description': 'Permission not found'
         }, 401)
-    
+
     return True
 
 
@@ -119,26 +120,26 @@ def verify_decode_jwt(token):
             )
 
             return payload
-        
+
         except jwt.ExpiredSignatureError:
             raise AuthError({
                 'code': 'token_expired',
                 'description': 'Token expired.'
             }, 401)
-        
+
         except jwt.JWTClaimsError:
             raise AuthError({
                 'code': 'invalid_claims',
                 'description': 'Incorrect claims. '
                                'Please check the audience and issuer.'
             }, 401)
-        
+
         except Exception:
             raise AuthError({
                 'code': 'invalid header',
                 'description': 'Unable to parse authentication token.'
             }, 400)
-    
+
     raise AuthError({
         'code': 'invalid_header',
         'description': 'Unable to find the appropriate key.'
@@ -155,6 +156,6 @@ def requires_auth(permission=''):
             # Authorization
             check_permissions(permission, payload)
             return f(payload, *args, **kwargs)
-        
+
         return wrapper
     return requires_auth_decorator

@@ -8,6 +8,7 @@ from models import setup_db, db
 
 DATABASE_URL = os.environ['TEST_DATABASE_URL']
 
+
 class ClosetAppTestCase(unittest.TestCase):
     """This class represents the closet app test case"""
 
@@ -24,7 +25,7 @@ class ClosetAppTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-        
+
         # set up jwts
         self.user_headers = {
             'Authorization': 'Bearer {}'.format(os.environ['USER_JWT'])
@@ -43,7 +44,7 @@ class ClosetAppTestCase(unittest.TestCase):
         # using manager JWT and create clothes and users
         # ------------------------------
         # delete all existing clothes and users
-        # ------------------------------   
+        # ------------------------------
         res = self.client().get(
             '/clothes',
             headers=self.manager_headers)
@@ -60,10 +61,10 @@ class ClosetAppTestCase(unittest.TestCase):
             res = self.client().delete(
                 '/users/{}'.format(user['id']),
                 headers=self.manager_headers)
-        
+
         # ------------------------------
         # create clothes
-        # ------------------------------   
+        # ------------------------------
         clothes = [
             {'type': 'shirt', 'size': '100'},
             {'type': 'pants', 'size': '120'}
@@ -86,15 +87,18 @@ class ClosetAppTestCase(unittest.TestCase):
         # ------------------------------
         self.user_auth0_id = "google-oauth2|103606340396848658678"
         users = [
-            {"e_mail":"testuser1@kinder-reuse-closet.com",
-            "address":"Bunkyo-ku, Tokyo",
-            "auth0_id":self.user_auth0_id,
-            "role":"user"},
-            {"e_mail":"testuser2@kinder-reuse-closet.com",
-            "address":"Shibuya-ku, Tokyo",
-            "auth0_id":"auth0|5fdb49c07567970069085ee9",
-            "role":"user"}
-        ]
+            {
+                "e_mail": "testuser1@kinder-reuse-closet.com",
+                "address": "Bunkyo-ku, Tokyo",
+                "auth0_id": self.user_auth0_id,
+                "role": "user"
+            },
+            {
+                "e_mail": "testuser2@kinder-reuse-closet.com",
+                "address": "Shibuya-ku, Tokyo",
+                "auth0_id": "auth0|5fdb49c07567970069085ee9",
+                "role": "user"
+            }]
         response = []
         for item_data in users:
             res = self.client().post(
@@ -104,20 +108,20 @@ class ClosetAppTestCase(unittest.TestCase):
             data = json.loads(res.data)
             response.append(data)
         staff = {
-            "e_mail":"teststaff@kinder-reuse-closet.com",
-            "address":"Shibuya-ku, Tokyo",
-            "auth0_id":"auth0|5fadbe9e64abac00751e7c61",
-            "role":"staff"
+            "e_mail": "teststaff@kinder-reuse-closet.com",
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "auth0|5fadbe9e64abac00751e7c61",
+            "role": "staff"
         }
         res = self.client().post(
             '/users',
             json=staff,
             headers=self.manager_headers)
         manager = {
-            "e_mail":"testmanager@kinder-reuse-closet.com",
-            "address":"Shibuya-ku, Tokyo",
-            "auth0_id":"auth0|5f6d247925dd140078ffbefc",
-            "role":"manager"
+            "e_mail": "testmanager@kinder-reuse-closet.com",
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "auth0|5f6d247925dd140078ffbefc",
+            "role": "manager"
         }
         res = self.client().post(
             '/users',
@@ -133,7 +137,7 @@ class ClosetAppTestCase(unittest.TestCase):
         # ------------------------------
         res = self.client().post(
             '/clothes/{}/reservations'.format(self.clothes_id),
-            json={"auth0_id":"google-oauth2|103606340396848658678"},
+            json={"auth0_id": "google-oauth2|103606340396848658678"},
             headers=self.user_headers)
         data = json.loads(res.data)
 
@@ -188,7 +192,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
-    
+
     def test_public_4_forbidden_update_clothes(self):
         """PATCH /clothes/<id>
         Public access is forbidden for updating given clothes.
@@ -200,7 +204,7 @@ class ClosetAppTestCase(unittest.TestCase):
                 'size': size
             })
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
@@ -222,7 +226,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'clothes/{}/reservations'.format(self.extra_clothes_id),
-            json = {"auth0_id": self.user_auth0_id})
+            json={"auth0_id": self.user_auth0_id})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 401)
@@ -241,7 +245,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
-    
+
     def test_public_8_forbidden_delete_a_reservation(self):
         """DELETE /clothes/<id>/reservations
         Public access for deleting a reservation is forbidden.
@@ -290,7 +294,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
-    
+
     def test_public_3_forbidden_update_users(self):
         """PATCH /users/<id>
         Public access is forbidden for updating given user.
@@ -302,7 +306,7 @@ class ClosetAppTestCase(unittest.TestCase):
                 'address': address
             })
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
@@ -324,7 +328,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'users/{}/reservations'.format(self.user_id),
-            json = {
+            json={
                 "auth0_id": self.user_auth0_id,
                 "reservations": [self.extra_clothes_id]
             })
@@ -346,7 +350,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'authorization_header_missing')
-    
+
     def test_public_7_forbidden_delete_reservations(self):
         """DELETE /users/<id>/reservations
         Public access is forbidden for deletind user's all reservations.
@@ -396,7 +400,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['clothes'], list), True)
-    
+
     def test_user_3_forbidden_update_clothes(self):
         """PATCH /clothes/<id>
         Updating given clothes with user JWT is forbidden.
@@ -409,7 +413,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.user_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
@@ -426,14 +430,14 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
-    
+
     def test_user_5_make_a_reservation(self):
         """POST /clothes/<id>/reservations
         Test making a reservation with user JWT.
         """
         res = self.client().post(
             'clothes/{}/reservations'.format(self.extra_clothes_id),
-            json = {"auth0_id": self.user_auth0_id},
+            json={"auth0_id": self.user_auth0_id},
             headers=self.user_headers)
         data = json.loads(res.data)
 
@@ -469,7 +473,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Invalid_claims")
-    
+
     def test_user_8_delete_a_reservation(self):
         """DELETE /clothes/<id>/reservations
         Test delete a reservation with user JWT.
@@ -536,7 +540,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
-    
+
     def test_user_3_forbidden_update_users(self):
         """PATCH /users/<id>
         Updating given user with user JWT is forbidden.
@@ -549,7 +553,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.user_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
@@ -573,7 +577,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'users/{}/reservations'.format(self.user_id),
-            json = {
+            json={
                 "auth0_id": self.user_auth0_id,
                 "reservations": [self.extra_clothes_id]
             },
@@ -613,7 +617,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Invalid_claims")
-    
+
     def test_user_8_delete_reservations(self):
         """DELETE /users/<id>/reservations
         Test delete user's all reservations with user JWT.
@@ -679,7 +683,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['clothes'], list), True)
-    
+
     def test_staff_3_update_clothes(self):
         """PATCH /clothes/<id>
         Test updating given clothes with staff JWT.
@@ -692,7 +696,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.staff_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['clothes']['size'], float(size))
@@ -716,7 +720,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'clothes/{}/reservations'.format(self.extra_clothes_id),
-            json = {"auth0_id": self.user_auth0_id},
+            json={"auth0_id": self.user_auth0_id},
             headers=self.staff_headers)
         data = json.loads(res.data)
 
@@ -738,7 +742,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['id'], self.clothes_id)
         self.assertEqual(data['clothes']['status'], "reserved")
         self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
-    
+
     def test_staff_7_delete_a_reservation(self):
         """DELETE /clothes/<id>/reservations
         Test delete a reservation with staff JWT.
@@ -792,7 +796,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['users'], list), True)
-    
+
     def test_staff_3_forbidden_update_users(self):
         """PATCH /users/<id>
         Updating given user with staff JWT is forbidden.
@@ -805,7 +809,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.staff_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'unauthorized')
@@ -829,7 +833,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'users/{}/reservations'.format(self.user_id),
-            json = {
+            json={
                 "auth0_id": self.user_auth0_id,
                 "reservations": [self.extra_clothes_id]
             },
@@ -854,7 +858,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes'][0]['id'], self.clothes_id)
         self.assertEqual(data['clothes'][0]['status'], "reserved")
         self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
-    
+
     def test_staff_7_delete_reservations(self):
         """DELETE /users/<id>/reservations
         Test delete user's all reservations with staff JWT.
@@ -907,7 +911,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['clothes'], list), True)
-    
+
     def test_manager_3_update_clothes(self):
         """PATCH /clothes/<id>
         Test updating given clothes with manager JWT.
@@ -920,7 +924,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.manager_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['clothes']['size'], float(size))
@@ -944,7 +948,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'clothes/{}/reservations'.format(self.extra_clothes_id),
-            json = {"auth0_id": self.user_auth0_id},
+            json={"auth0_id": self.user_auth0_id},
             headers=self.manager_headers)
         data = json.loads(res.data)
 
@@ -966,7 +970,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes']['id'], self.clothes_id)
         self.assertEqual(data['clothes']['status'], "reserved")
         self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
-    
+
     def test_manager_7_delete_a_reservation(self):
         """DELETE /clothes/<id>/reservations
         Test delete a reservation with manager JWT.
@@ -1021,7 +1025,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(isinstance(data['users'], list), True)
-    
+
     def test_manager_3_update_users(self):
         """PATCH /users/<id>
         Test updating given user with manager JWT.
@@ -1034,7 +1038,7 @@ class ClosetAppTestCase(unittest.TestCase):
             },
             headers=self.manager_headers)
         data = json.loads(res.data)
-        
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['user']['address'], address)
@@ -1058,7 +1062,7 @@ class ClosetAppTestCase(unittest.TestCase):
         """
         res = self.client().post(
             'users/{}/reservations'.format(self.user_id),
-            json = {
+            json={
                 "auth0_id": self.user_auth0_id,
                 "reservations": [self.extra_clothes_id]
             },
@@ -1083,7 +1087,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes'][0]['id'], self.clothes_id)
         self.assertEqual(data['clothes'][0]['status'], "reserved")
         self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
-    
+
     def test_manager_7_delete_reservations(self):
         """DELETE /users/<id>/reservations
         Test delete user's all reservations with manager JWT.
@@ -1098,6 +1102,7 @@ class ClosetAppTestCase(unittest.TestCase):
         self.assertEqual(data['clothes'][0]['id'], self.clothes_id)
         self.assertEqual(data['clothes'][0]['status'], "")
         self.assertEqual(data['user']['auth0_id'], self.user_auth0_id)
+
 
 # Make the tests conveniently excecutabe
 if __name__ == "__main__":
