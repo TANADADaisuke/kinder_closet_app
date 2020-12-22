@@ -1,5 +1,7 @@
 # Kinder Reuser Closet Project
 
+This application is an outcome from Udacity's online course [Full Stack Web Developer Nanodegree](https://www.udacity.com/course/full-stack-web-developer-nanodegree--nd0044) and the first web application I made. I used to join volantary projects which support small children and their families, and I desired to contribute these projects by promoting digital transformation. This is my first step and a first career as a digital person. I hope to work hard to provide more services which support those who have been in hard situation with analog processes.
+
 ## Inroduction
 
 Kinder Reuse Closet is a reusing platform for kinder wears. It is a volantary project managed by non-profit organization and supporting families with small children for a long time. 
