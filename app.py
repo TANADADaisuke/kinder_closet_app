@@ -372,7 +372,7 @@ def create_app(test_config=None):
             'users': array of each formatted users
         }
         """
-        selection = User.query.all()
+        selection = User.query.order_by(User.id).all()
         users = []
         for item in selection:
             formatted_user = item.format()
@@ -697,7 +697,7 @@ def create_app(test_config=None):
         # delete reservations
         error = False
         formatted_user = user.format()
-        reservations = Reserve.query.filter_by(user_id=user_id).all()
+        reservations = Reserve.query.filter_by(user_id=user_id).order_by(Reserve.clothes_id).all()
         try:
             formatted_clothes = []
             for reservation in reservations:

@@ -83,7 +83,6 @@ This application is hosted via Heroku.
 We have the following endpoints.
 - Endpoints:
   - GET /clothes and /users
-  - GET /clothes/{clothes_id} and /uses/{user_id}
   - GET /clothes/{clothes_id}/reservations and /user/{user_id}/reservations
   - POST /clothes and /users
   - POST /clothes/{clothes_id}/reservations and /users/{user_id}/reservations
@@ -97,7 +96,7 @@ Details are described below.
 - General:
   - Get clothes from our database server.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
+  - Role Base Access Control: User, staff, or manager role is required.
   - Returns: json object with following attributes
     {
         'success': True,
@@ -194,182 +193,430 @@ Details are described below.
 
 ### GET /users
 - General:
-  - 
+  - Get users from our database server.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: Staff or manager role is required.
+  - Returns: json object with following attributes
+    {
+        'success': True,
+        'total': num of users stored in our server.
+        'users': array of each formatted users
+    }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users -H 'Authorization: Bearer JWT''
   - Response:'''
-
-  '''
-
-### GET /clothes/{clothes_id}
-- General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
-- Samples:
-  - Request:
-  - Response:'''
-
-  '''
-
-### GET /users/{user_id}
-- General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
-- Samples:
-  - Request:
-  - Response:'''
-
+    {
+        "success": true,
+        "total": 6,
+        "users": [
+            {
+                "address": "",
+                "auth0_id": "test_account_1 | test_1",
+                "e_mail": "test1@kinder-reuse-closet.com",
+                "id": 1,
+                "role": "user"
+            },
+            {
+                "address": "Minato-ku, Tokyo",
+                "auth0_id": "test_account_2 | test_2",
+                "e_mail": "test2@kinder-reuse-closet.com",
+                "id": 4,
+                "role": "user"
+            },
+            {
+                "address": "Shibuya-ku, Tokyo",
+                "auth0_id": "auth0|5fadbe9e64abac00751e7c61",
+                "e_mail": "teststaff@kinder-reuse-closet.com",
+                "id": 8,
+                "role": "staff"
+            },
+            {
+                "address": "Shibuya-ku, Tokyo",
+                "auth0_id": "auth0|5f6d247925dd140078ffbefc",
+                "e_mail": "testmanager@kinder-reuse-closet.com",
+                "id": 9,
+                "role": "manager"
+            },
+            {
+                "address": "Machida-city, Tokyo",
+                "auth0_id": "auth0|5fdb49c07567970069085ee9",
+                "e_mail": "testuser_2@kinder-reuse-closet.com",
+                "id": 10,
+                "role": "user"
+            },
+            {
+                "address": "Shibuya-ku, Tokyo",
+                "auth0_id": "google-oauth2|103606340396848658678",
+                "e_mail": "testuser@kinder-reuse-closet.com",
+                "id": 11,
+                "role": "user"
+            }
+        ]
+    }
   '''
 
 ### GET /clothes/{clothes_id}/reservations
 - General:
-  - 
+  - Retrieve a reservation of a certain clothes.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: User, staff, or manager role is required.
+  - Returns: json object with following attributes
+    {
+        'success': True,
+        'clothes': formatted clothes of the given clothes_id,
+        'user': formatted user who has reserved that clothes
+    }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes/7/reservations -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "clothes": {
+            "id": 7,
+            "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+            "size": 15.5,
+            "status": "reserved",
+            "type": "shoes"
+        },
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ### GET /users/{user_id}/reservations
 - General:
-  - 
+  - Get all reservations of a certain user.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: User, staff, or manager role is required.
+  - Returns: json object with following attributes
+    {
+        'success': True,
+        'clothes': list of formatted clothes which the given user has reserved,
+        'user': formatted user who has reserved those clothes
+    }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users/11/reservations -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "clothes": [
+            {
+                "id": 7,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 15.5,
+                "status": "reserved",
+                "type": "shoes"
+            }
+        ],
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ### POST /clothes
 - General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Post a new clothes to our database server.
+  - Request Arguments: type, and size
+  - Role Base Access Control: Staff, or manager role is required.
+  - Returns: json object with following attributes
+    {
+        'success': True,
+        'clothes': formatted clothes which has been just created
+    }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"type":"shirt", "size":"120"}''
   - Response:'''
-
+    {
+        "clothes": {
+            "id": 21,
+            "registerd": "Mon, 21 Dec 2020 12:14:37 GMT",
+            "size": 120.0,
+            "status": "",
+            "type": "shirt"
+        },
+        "success": true
+    }
   '''
 
 ### POST /users
 - General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Create a new user.
+  - Request Arguments: e_mail, address, auth0_id, and role
+  - Role Base Access Control: Manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True,
+      'user': formatted user which has been just created
+  }
 - Samples:
-  - Request:
+  - Request: curl http://0.0.0.0:8080/users -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"e_mail":"test_user@kinder-reuse-closet.com", "address":"Shibuya-ku, Tokyo","auth0_id":"auth0|testuser", "role":"user"}''
   - Response:'''
-
+    {
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "auth0|testuser",
+            "e_mail": "test_user@kinder-reuse-closet.com",
+            "id": 12,
+            "role": "user"
+        }
+    }
   '''
 
 ### POST /clothes/{clothes_id}/reservations
 - General:
-  - 
-  - Request Arguments: None
+  - Users can make a reservation.
+  - Request Arguments: auth0_id
   - Role Base Access Control: User role is required.
-  - Returns:
+  - Returns: json object with following attribute
+  {
+      'success': True,
+      'clothes': formatted clothes which has been just reserved,
+      'user': formatted user who has just reserved that clothes
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes/7/reservations -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"auth0_id":"google-oauth2|103606340396848658678"}''
   - Response:'''
-
+    {
+        "clothes": {
+            "id": 7,
+            "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+            "size": 15.5,
+            "status": "reserved",
+            "type": "shoes"
+        },
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ### POST /users/{user_id}/reservations
 - General:
-  - 
-  - Request Arguments: None
+  - Users can post reservations through their own user_id.
+  - Request Arguments: auth0_id and list of reservations
   - Role Base Access Control: User role is required.
-  - Returns:
+  - Returns: json object with following attributes
+  {
+      "success": True,
+      "clothes": list of formatted clothes which has been just reserved,
+      "user": formatted user who has just reserved those clothes   
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users/11/reservations -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"auth0_id":"google-oauth2|103606340396848658678", "reservations":[6, 10, 11]}''
   - Response:'''
-
+    {
+        "clothes": [
+            {
+                "id": 6,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 120.0,
+                "status": "reserved",
+                "type": "shirt"
+            },
+            {
+                "id": 11,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 100.0,
+                "status": "reserved",
+                "type": "shirt"
+            }
+        ],
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ### PATCH /clothes/{clothes_id}
 - General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Updata clothes data.
+  - Request Arguments: At least one of the following; type or size
+  - Role Base Access Control: Staff, or manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True,
+      'clothes': formatted clothes which has been just updated
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes/12 -X PATCH -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"size":"120"}''
   - Response:'''
-
+    {
+        "clothes": {
+            "id": 12,
+            "registerd": "Tue, 22 Dec 2020 00:36:42 GMT",
+            "size": 120.0,
+            "status": "",
+            "type": "shirt"
+        },
+        "success": true
+    }
   '''
 
 ### PATCH /users/{user_id}
 - General:
-  - 
-  - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Update user date of given id.
+  - Request Arguments: At least one of the following; e_mail, address, auth0_id, or role
+  - Role Base Access Control: Manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True
+      'user': formatted user which has been just updated
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users/1 -X PATCH -H 'Content-Type: application/json' -H 'Authorization: Bearer JWT' -d '{"address": "Meguro-ku, Tokyo"}''
   - Response:'''
-
+    {
+        "success": true,
+        "user": {
+            "address": "Meguro-ku, Tokyo",
+            "auth0_id": "test_account_1 | test_1",
+            "e_mail": "test1@kinder-reuse-closet.com",
+            "id": 1,
+            "role": "user"
+        }
+    }
   '''
 
 ### DELETE /clothes/{clothes_id}
 - General:
-  - 
+  - Delete a clothes from our server.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: Staff, or manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True,
+      'deleted': id of deleted clothes
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes/7 -X DELETE -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "deleted": 7,
+        "success": true
+    }
   '''
 
 ### DELETE /users/{user_id}
 - General:
-  - 
+  - Delete a certain user.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: Manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True,
+      'deleted': id of deleted user
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users/1 -X DELETE -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "deleted": 1,
+        "success": true
+    }
   '''
 
 ### DELETE /clothes/{clothes_id}/reservations
 - General:
-  - 
+  - Users can cancel their own reservations.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: User, staff or manager role is required.
+  - Returns: json object with following attributes
+  {
+      'success': True,
+      'clothes': formatted clothes of the given clothes_id,
+      'user': formatted user who has canceled that reservation
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/clothes/7/reservations -X DELETE -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "clothes": {
+            "id": 7,
+            "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+            "size": 15.5,
+            "status": "",
+            "type": "shoes"
+        },
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ### DELETE /users/{user_id}/reservations
 - General:
-  - 
+  - Delete all reservations of a certain user.
   - Request Arguments: None
-  - Role Base Access Control: User role is required.
-  - Returns:
+  - Role Base Access Control: User, staff, or manager role is required.
+  - Returns: json object with following attributes
+  {
+      "success": True,
+      "clothes": list of formatted clothes of which reservations 
+                 have been just deleted,
+      "user": formatted user who has just canceled those reservations
+  }
 - Samples:
-  - Request:
+  - Request: 'curl http://0.0.0.0:8080/users/11/reservations -X DELETE -H 'Authorization: Bearer JWT''
   - Response:'''
-
+    {
+        "clothes": [
+            {
+                "id": 6,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 120.0,
+                "status": "",
+                "type": "shirt"
+            },
+            {
+                "id": 7,
+                "registerd": "Fri, 18 Dec 2020 23:18:38 GMT",
+                "size": 15.5,
+                "status": "",
+                "type": "shoes"
+            },
+            {
+                "id": 11,
+                "registerd": "Fri, 18 Dec 2020 09:18:12 GMT",
+                "size": 100.0,
+                "status": "",
+                "type": "shirt"
+            }
+        ],
+        "success": true,
+        "user": {
+            "address": "Shibuya-ku, Tokyo",
+            "auth0_id": "google-oauth2|103606340396848658678",
+            "e_mail": "testuser@kinder-reuse-closet.com",
+            "id": 11,
+            "role": "user"
+        }
+    }
   '''
 
 ## Testing
