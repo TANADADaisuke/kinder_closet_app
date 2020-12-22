@@ -5,6 +5,7 @@ from flask_cors import CORS
 from models import setup_db, Clothes, User, Reserve
 from auth import requires_auth, AuthError
 
+
 def create_app(test_config=None):
 
     # App Config
@@ -97,7 +98,7 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             clothes.close_session()
-        
+
         if error:
             abort(422)
         else:
@@ -105,7 +106,7 @@ def create_app(test_config=None):
                 'success': True,
                 'clothes': clothes.format()
             })
-    
+
     @app.route('/clothes/<int:clothes_id>', methods=['PATCH'])
     @requires_auth('patch:clothes')
     def update_clothes_data(payload, clothes_id):
@@ -130,7 +131,7 @@ def create_app(test_config=None):
         try:
             if 'type' in keys:
                 clothes.type = body['type']
-            if 'size'in keys:
+            if 'size' in keys:
                 clothes.size = body['size']
             if 'status' in keys:
                 clothes.status = body['status']
@@ -142,7 +143,7 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             clothes.close_session()
-        
+
         if error:
             abort(422)
 
@@ -150,7 +151,6 @@ def create_app(test_config=None):
             'success': True,
             'clothes': formatted_clothes
         })
-
 
     @app.route('/clothes/<int:clothes_id>', methods=['DELETE'])
     @requires_auth('delete:clothes')
@@ -178,10 +178,10 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             clothes.close_session()
-        
+
         if error:
             abort(422)
-        
+
         return jsonify({
             'success': True,
             'deleted': clothes_id
@@ -216,7 +216,7 @@ def create_app(test_config=None):
         role = access_user.role
         # if user role is "user", check if access user_id matches
         # reservation user_id
-        reserved_user = reservation.user        
+        reserved_user = reservation.user
         if role == 'user' and access_user.id != reserved_user.id:
             raise AuthError({
                 'code': 'Invalid_claims',
@@ -285,7 +285,7 @@ def create_app(test_config=None):
         finally:
             reservation.close_session()
             clothes.close_session()
-        
+
         if error:
             abort(422)
         else:
@@ -348,7 +348,7 @@ def create_app(test_config=None):
         finally:
             reservation.close_session()
             clothes.close_session()
-        
+
         if error:
             abort(422)
         else:
@@ -364,7 +364,7 @@ def create_app(test_config=None):
     @requires_auth('get:users')
     def retrieve_users(payload):
         """Get users from our database server.
-        
+
         Returns: json object with following attributes
         {
             'success': True,
@@ -377,7 +377,7 @@ def create_app(test_config=None):
         for item in selection:
             formatted_user = item.format()
             users.append(formatted_user)
-        
+
         return jsonify({
             'success': True,
             'total': len(users),
@@ -388,7 +388,7 @@ def create_app(test_config=None):
     @requires_auth('post:users')
     def create_user(payload):
         """Create a new user.
-        
+
         Returns: json object with following attributes
         {
             'success': True,
@@ -433,7 +433,7 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             user.close_session()
-        
+
         if error:
             abort(422)
         else:
@@ -480,7 +480,7 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             user.close_session()
-        
+
         if error:
             abort(422)
 
@@ -515,15 +515,15 @@ def create_app(test_config=None):
             print(sys.exc_info())
         finally:
             user.close_session()
-        
+
         if error:
             abort(422)
-        
+
         return jsonify({
             'success': True,
             'deleted': user_id
         })
-    
+
     @app.route('/users/<int:user_id>/reservations')
     @requires_auth('get:reservations')
     def retrieve_user_reservations(payload, user_id):
@@ -536,7 +536,8 @@ def create_app(test_config=None):
         Returns: json object with following attributes
         {
             'success': True,
-            'clothes': list of formatted clothes which the given user has reserved,
+            'clothes': list of formatted clothes which the given user
+                       has reserved,
             'user': formatted user who has reserved those clothes
         }
         """
@@ -547,7 +548,7 @@ def create_app(test_config=None):
         # querying who is accessing and check role
         access_user = User.query.filter_by(auth0_id=payload['sub']).first()
         role = access_user.role
-        # if user role is "user", check if access user_id matches     
+        # if user role is "user", check if access user_id matches
         if role == 'user' and access_user.id != user_id:
             raise AuthError({
                 'code': 'Invalid_claims',
@@ -560,7 +561,7 @@ def create_app(test_config=None):
         clothes = []
         for reservation in reservations:
             clothes.append(reservation.clothes.format())
-        
+
         return jsonify({
             'success': True,
             'clothes': clothes,
@@ -597,7 +598,7 @@ def create_app(test_config=None):
         # if auth0_id in body does not match auth0_id in payload, abort 401
         if body['auth0_id'] != payload['sub']:
             abort(401)
-        
+
         # query who is accessing
         access_user = User.query.filter_by(auth0_id=payload['sub']).first()
         # check if user_id in URL matches the access user id
@@ -606,7 +607,7 @@ def create_app(test_config=None):
                 'code': 'Invalid_claims',
                 'description': 'Unauthorized access by user'
             }, 401)
-        
+
         # query clothes and store them in variable "clothes"
         if not isinstance(body['reservations'], list):
             abort(400)
@@ -662,7 +663,7 @@ def create_app(test_config=None):
                 'clothes': formatted_clothes,
                 'user': formatted_user
             })
-    
+
     @app.route('/users/<int:user_id>/reservations', methods=['DELETE'])
     @requires_auth('delete:reservations')
     def delete_reservations(payload, user_id):
@@ -675,7 +676,7 @@ def create_app(test_config=None):
         Returns: json object with following attribute
         {
             "success": True,
-            "clothes": list of formatted clothes of which reservations 
+            "clothes": list of formatted clothes of which reservations
                        have been just deleted,
             "user": formatted user who has just canceled those reservations
         }
@@ -687,7 +688,7 @@ def create_app(test_config=None):
         # querying who is accessing and check role
         access_user = User.query.filter_by(auth0_id=payload['sub']).first()
         role = access_user.role
-        # if user role is "user", check if access user_id matches     
+        # if user role is "user", check if access user_id matches
         if role == 'user' and access_user.id != user_id:
             raise AuthError({
                 'code': 'Invalid_claims',
@@ -697,7 +698,8 @@ def create_app(test_config=None):
         # delete reservations
         error = False
         formatted_user = user.format()
-        reservations = Reserve.query.filter_by(user_id=user_id).order_by(Reserve.clothes_id).all()
+        reservations = Reserve.query.filter_by(user_id=user_id)\
+            .order_by(Reserve.clothes_id).all()
         try:
             formatted_clothes = []
             for reservation in reservations:
@@ -736,7 +738,7 @@ def create_app(test_config=None):
             'message': error.error['code'],
             'description': error.error['description']
         }), status_code
-    
+
     @app.errorhandler(400)
     def bad_request(error):
         return jsonify({
@@ -760,7 +762,7 @@ def create_app(test_config=None):
             'error': 404,
             'message': 'not found'
         }), 404
-    
+
     @app.errorhandler(405)
     def method_not_allowed(error):
         return jsonify({
@@ -768,7 +770,7 @@ def create_app(test_config=None):
             'error': 405,
             'message': 'method not allowed'
         }), 405
-    
+
     @app.errorhandler(422)
     def umprocessable(error):
         return jsonify({
@@ -776,7 +778,7 @@ def create_app(test_config=None):
             'error': 422,
             'message': 'umprocessable'
         }), 422
-    
+
     @app.errorhandler(500)
     def internal_server_error(error):
         return jsonify({
@@ -784,8 +786,9 @@ def create_app(test_config=None):
             'error': 500,
             'message': 'internal server error'
         }), 500
-    
+
     return app
+
 
 app = create_app()
 
