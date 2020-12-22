@@ -9,6 +9,7 @@ database_path = os.environ['DATABASE_URL']
 
 db = SQLAlchemy()
 
+
 def setup_db(app, database_path=database_path):
     """binds a flask application and a SQLAlchemy service"""
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
@@ -21,7 +22,7 @@ def setup_db(app, database_path=database_path):
 # Clothes
 # Have type, size, and registered time
 # --------------------------------------------- #
-class Clothes(db.Model):  
+class Clothes(db.Model):
     __tablename__ = 'clothes'
 
     id = Column(Integer, primary_key=True)
@@ -56,7 +57,7 @@ class Clothes(db.Model):
 
     def rollback(self):
         db.session.rollback()
-    
+
     def close_session(self):
         db.session.close()
 
@@ -74,7 +75,7 @@ class Clothes(db.Model):
 # User
 # Have e-mail and address
 # --------------------------------------------- #
-class User(db.Model):  
+class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
@@ -94,21 +95,21 @@ class User(db.Model):
         self.auth0_id = auth0_id
         self.role = role
         self.address = address
-    
+
     def insert(self):
         db.session.add(self)
         db.session.commit()
 
     def update(self):
         db.session.commit()
-    
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    
+
     def rollback(self):
         db.session.rollback()
-    
+
     def close_session(self):
         db.session.close()
 
@@ -121,30 +122,36 @@ class User(db.Model):
             'address': self.address
         }
 
+
 # --------------------------------------------- #
 # Reserves
 # Relational table between clothes and users
 # --------------------------------------------- #
-class Reserve(db.Model):  
+class Reserve(db.Model):
     __tablename__ = 'reserves'
 
     id = Column(Integer, primary_key=True)
-    clothes_id = Column(Integer, ForeignKey('clothes.id'), nullable=False, unique=True)
+    clothes_id = Column(
+        Integer,
+        ForeignKey('clothes.id'),
+        nullable=False,
+        unique=True
+        )
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    
+
     def insert(self):
         db.session.add(self)
         db.session.commit()
-    
+
     def update(self):
         db.session.commit()
-    
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    
+
     def rollback(self):
         db.session.rollback()
-    
+
     def close_session(self):
         db.session.close()
